@@ -1,0 +1,92 @@
+'use client';
+
+import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { 
+  GraduationCap, 
+  LayoutDashboard, 
+  BookOpen, 
+  LogOut
+} from 'lucide-react';
+import { signout } from '@/app/auth/actions';
+
+interface SidebarProps {
+  role: 'admin' | 'parent' | 'student';
+}
+
+export default function Sidebar({ role }: SidebarProps) {
+  const pathname = usePathname();
+
+  const menuItems = {
+    admin: [
+      {
+        label: 'Admin Control',
+        href: '/admin/dashboard',
+        icon: LayoutDashboard,
+      },
+    ],
+    parent: [
+      {
+        label: 'Dashboard',
+        href: '/parent/dashboard',
+        icon: LayoutDashboard,
+      },
+      {
+        label: 'Course Catalog',
+        href: '/parent/catalog',
+        icon: BookOpen,
+      },
+    ],
+    student: [
+      {
+        label: 'Academy Nexus',
+        href: '/student/dashboard',
+        icon: GraduationCap,
+      },
+    ]
+  }[role];
+
+  return (
+    <aside className="sidebar">
+      {/* Brand Header */}
+      <div className="sidebar-logo">
+        <GraduationCap style={{ 
+          width: '28px', 
+          height: '28px', 
+          color: role === 'admin' ? 'hsl(var(--accent-purple))' : 'hsl(var(--accent-pink))',
+        }} />
+        <span>Tiptop Academy</span>
+      </div>
+
+      {/* Navigation Items */}
+      <nav className="sidebar-menu">
+        {menuItems.map((item) => {
+          const isActive = pathname === item.href;
+          const Icon = item.icon;
+          
+          return (
+            <Link 
+              key={item.href} 
+              href={item.href}
+              className={`sidebar-link ${isActive ? 'active' : ''}`}
+            >
+              <Icon style={{ width: '20px', height: '20px' }} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+      </nav>
+
+      {/* Footer / User Controls */}
+      <div style={{ marginTop: 'auto' }}>
+        <form action={signout}>
+          <button type="submit" className="btn-secondary" style={{ width: '100%', color: '#ef4444', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
+            <LogOut style={{ width: '18px', height: '18px' }} />
+            <span>Sign Out</span>
+          </button>
+        </form>
+      </div>
+    </aside>
+  );
+}
