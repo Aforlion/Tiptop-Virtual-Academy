@@ -7,7 +7,11 @@ import {
   GraduationCap, 
   LayoutDashboard, 
   BookOpen, 
-  LogOut
+  LogOut,
+  CreditCard,
+  Users,
+  Briefcase,
+  MonitorPlay
 } from 'lucide-react';
 import { signout } from '@/app/auth/actions';
 
@@ -21,9 +25,29 @@ export default function Sidebar({ role }: SidebarProps) {
   const menuItems = {
     admin: [
       {
-        label: 'Admin Control',
+        label: 'Command Center',
         href: '/admin/dashboard',
         icon: LayoutDashboard,
+      },
+      {
+        label: 'Manage Users',
+        href: '/admin/users',
+        icon: Users,
+      },
+      {
+        label: 'Manage Courses',
+        href: '/admin/courses',
+        icon: BookOpen,
+      },
+      {
+        label: 'Manage Sessions',
+        href: '/admin/sessions',
+        icon: MonitorPlay,
+      },
+      {
+        label: 'Finance & Payments',
+        href: '/admin/finance',
+        icon: Briefcase,
       },
     ],
     parent: [
@@ -36,6 +60,11 @@ export default function Sidebar({ role }: SidebarProps) {
         label: 'Course Catalog',
         href: '/parent/catalog',
         icon: BookOpen,
+      },
+      {
+        label: 'Billing & Credits',
+        href: '/parent/billing',
+        icon: CreditCard,
       },
     ],
     student: [

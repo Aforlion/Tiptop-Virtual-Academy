@@ -71,6 +71,7 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
         student_id: student.id,
         session_id: 'session-mock-1',
         attended: false,
+        earned_badges: [],
         created_at: '',
         students: student,
         live_sessions: {

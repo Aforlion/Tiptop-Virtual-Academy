@@ -104,6 +104,7 @@ export default async function ParentDashboardPage() {
         student_id: students[0].id,
         session_id: liveSessions[1].id,
         attended: false,
+        earned_badges: [],
         created_at: '',
         students: students[0],
         live_sessions: liveSessions[1]

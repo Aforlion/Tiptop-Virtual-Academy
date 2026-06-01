@@ -57,7 +57,31 @@ export interface StudentBooking {
   student_id: string;
   session_id: string;
   attended: boolean;
+  earned_badges: string[];
   created_at: string;
+}
+
+export type PaymentStatus = 'pending' | 'success' | 'failed' | 'abandoned';
+
+export interface CreditPackage {
+  id: string;
+  name: string;
+  description: string | null;
+  credits: number;
+  price_cents: number;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface Payment {
+  id: string;
+  parent_id: string;
+  package_id: string;
+  reference: string;
+  amount_cents: number;
+  status: PaymentStatus;
+  created_at: string;
+  updated_at: string;
 }
 
 // Joined query result types
