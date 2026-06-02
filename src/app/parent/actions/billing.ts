@@ -50,9 +50,9 @@ export async function initializePaystackCheckout(packageId: string): Promise<Act
 
   try {
     // Paystack requires amount in kobo/cents. Our price_cents is exactly that.
-    const payload = {
+    // If it's a subscription package, pass the plan code instead of amount.
+    const payload: Record<string, any> = {
       email: user.email,
-      amount: creditPackage.price_cents,
       reference,
       callback_url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/parent/billing?status=success`,
       metadata: {
@@ -61,6 +61,12 @@ export async function initializePaystackCheckout(packageId: string): Promise<Act
         credits: creditPackage.credits,
       }
     };
+
+    if (creditPackage.paystack_plan_code) {
+      payload.plan = creditPackage.paystack_plan_code;
+    } else {
+      payload.amount = creditPackage.price_cents;
+    }
 
     const response = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',

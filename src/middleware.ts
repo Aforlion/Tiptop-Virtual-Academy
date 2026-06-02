@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
   const path = url.pathname
 
   // Protected paths helper
-  const isDashboardPath = path.startsWith('/admin') || path.startsWith('/parent') || path.startsWith('/student')
+  const isDashboardPath = path.startsWith('/admin') || path.startsWith('/parent') || path.startsWith('/student') || path.startsWith('/teacher')
 
   if (!user) {
     // If not logged in and trying to access protected dashboards, redirect to login
@@ -52,6 +52,8 @@ export async function middleware(request: NextRequest) {
     if (path === '/' || path === '/login' || path === '/signup') {
       if (role === 'admin') {
         url.pathname = '/admin/dashboard'
+      } else if (role === 'teacher') {
+        url.pathname = '/teacher/dashboard'
       } else if (role === 'student') {
         url.pathname = '/student/dashboard'
       } else {
@@ -62,17 +64,22 @@ export async function middleware(request: NextRequest) {
 
     // Role-specific directory enforcement
     if (path.startsWith('/admin') && role !== 'admin') {
-      url.pathname = role === 'student' ? '/student/dashboard' : '/parent/dashboard'
+      url.pathname = role === 'teacher' ? '/teacher/dashboard' : (role === 'student' ? '/student/dashboard' : '/parent/dashboard')
       return NextResponse.redirect(url)
     }
 
     if (path.startsWith('/student') && role !== 'student') {
-      url.pathname = role === 'admin' ? '/admin/dashboard' : '/parent/dashboard'
+      url.pathname = role === 'admin' ? '/admin/dashboard' : (role === 'teacher' ? '/teacher/dashboard' : '/parent/dashboard')
       return NextResponse.redirect(url)
     }
 
     if (path.startsWith('/parent') && role !== 'parent') {
-      url.pathname = role === 'admin' ? '/admin/dashboard' : '/student/dashboard'
+      url.pathname = role === 'admin' ? '/admin/dashboard' : (role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard')
+      return NextResponse.redirect(url)
+    }
+
+    if (path.startsWith('/teacher') && role !== 'teacher') {
+      url.pathname = role === 'admin' ? '/admin/dashboard' : (role === 'student' ? '/student/dashboard' : '/parent/dashboard')
       return NextResponse.redirect(url)
     }
   }

@@ -38,6 +38,7 @@ export async function POST(req: Request) {
     const metadata = event.data.metadata;
     const creditsToAdd = parseInt(metadata.credits, 10);
     const parentId = metadata.parent_id;
+    const subscriptionCode = event.data.subscription?.subscription_code || null;
 
     if (!parentId || isNaN(creditsToAdd)) {
       console.error('Webhook error: Missing metadata');
@@ -47,7 +48,11 @@ export async function POST(req: Request) {
     // 1. Update the payment record to success
     const { data: payment, error: paymentError } = await supabaseAdmin
       .from('payments')
-      .update({ status: 'success', updated_at: new Date().toISOString() })
+      .update({ 
+        status: 'success', 
+        subscription_code: subscriptionCode,
+        updated_at: new Date().toISOString() 
+      })
       .eq('reference', reference)
       .eq('status', 'pending') // Only update if it's pending to prevent double-crediting
       .select()
@@ -59,11 +64,6 @@ export async function POST(req: Request) {
     }
 
     // 2. Add flexible credits to the parent's profile
-    // Note: To make this atomic without an RPC, we could just read then write, but RPC is safer.
-    // However, since we locked the payment record (only processing it once), 
-    // a simple read-and-update or a stored procedure works. We'll use a fast read/write here
-    // because we don't expect high concurrency on the exact same parent profile for billing.
-
     const { data: profile } = await supabaseAdmin
       .from('profiles')
       .select('flexible_credits')
@@ -77,6 +77,76 @@ export async function POST(req: Request) {
         .eq('id', parentId);
         
       console.log(`Webhook success: Added ${creditsToAdd} credits to parent ${parentId}`);
+    }
+  }
+
+  // Handle recurring subscription renewal payments
+  if (event.event === 'invoice.update' && event.data.status === 'success') {
+    const subscriptionCode = event.data.subscription?.subscription_code;
+    
+    if (subscriptionCode) {
+      // Find initial payment to map subscription back to parent_id and package_id
+      const { data: existingPayment } = await supabaseAdmin
+        .from('payments')
+        .select('parent_id, package_id')
+        .eq('subscription_code', subscriptionCode)
+        .eq('status', 'success')
+        .limit(1)
+        .single();
+
+      if (existingPayment) {
+        const parentId = existingPayment.parent_id;
+        const packageId = existingPayment.package_id;
+
+        // Get credits amount from package
+        const { data: creditPackage } = await supabaseAdmin
+          .from('credit_packages')
+          .select('credits')
+          .eq('id', packageId)
+          .single();
+
+        if (creditPackage) {
+          const creditsToAdd = creditPackage.credits;
+          const invoiceReference = `INV_${event.data.invoice_code || event.data.id || Date.now()}`;
+
+          // Check for duplicate invoice processing
+          const { data: duplicatePayment } = await supabaseAdmin
+            .from('payments')
+            .select('id')
+            .eq('reference', invoiceReference)
+            .limit(1);
+
+          if (!duplicatePayment || duplicatePayment.length === 0) {
+            // 1. Create a new successful payment ledger entry for the renewal
+            await supabaseAdmin
+              .from('payments')
+              .insert({
+                parent_id: parentId,
+                package_id: packageId,
+                reference: invoiceReference,
+                amount_cents: event.data.amount,
+                status: 'success',
+                subscription_code: subscriptionCode
+              });
+
+            // 2. Add credits to the parent's account
+            const { data: profile } = await supabaseAdmin
+              .from('profiles')
+              .select('flexible_credits')
+              .eq('id', parentId)
+              .single();
+
+            if (profile) {
+              await supabaseAdmin
+                .from('profiles')
+                .update({ flexible_credits: profile.flexible_credits + creditsToAdd })
+                .eq('id', parentId);
+                
+              console.log(`Webhook success (Renewal): Added ${creditsToAdd} credits to parent ${parentId} for subscription ${subscriptionCode}`);
+            }
+          }
+        }
+      }
     }
   }
 

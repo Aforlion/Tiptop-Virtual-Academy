@@ -16,7 +16,7 @@ import {
 import { signout } from '@/app/auth/actions';
 
 interface SidebarProps {
-  role: 'admin' | 'parent' | 'student';
+  role: 'admin' | 'parent' | 'student' | 'teacher';
 }
 
 export default function Sidebar({ role }: SidebarProps) {
@@ -67,6 +67,18 @@ export default function Sidebar({ role }: SidebarProps) {
         icon: CreditCard,
       },
     ],
+    teacher: [
+      {
+        label: 'Teacher Console',
+        href: '/teacher/dashboard',
+        icon: LayoutDashboard,
+      },
+      {
+        label: 'Lesson Plans',
+        href: '/teacher/lessons',
+        icon: BookOpen,
+      },
+    ],
     student: [
       {
         label: 'Academy Nexus',
@@ -83,7 +95,11 @@ export default function Sidebar({ role }: SidebarProps) {
         <GraduationCap style={{ 
           width: '28px', 
           height: '28px', 
-          color: role === 'admin' ? 'hsl(var(--accent-purple))' : 'hsl(var(--accent-pink))',
+          color: role === 'admin' 
+            ? 'hsl(var(--accent-purple))' 
+            : role === 'teacher'
+              ? 'hsl(var(--accent-cyan))'
+              : 'hsl(var(--accent-pink))',
         }} />
         <span>Tiptop Academy</span>
       </div>

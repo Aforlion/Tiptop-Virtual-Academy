@@ -9,6 +9,7 @@ import WelcomeHero from '../components/WelcomeHero'
 import ClassroomSection from '../components/ClassroomSection'
 import SchedulePanel from '../components/SchedulePanel'
 import ExplorationPanel from '../components/ExplorationPanel'
+import BadgeShowcase from '../components/BadgeShowcase'
 import { Student, BookingWithDetails } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -102,6 +103,9 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
   const activeBooking = bookings[0]
   const portalTitle = isJunior ? 'Junior Academy Dashboard' : 'Nexus Learner Terminal'
 
+  // Collect all earned badge IDs
+  const allEarnedBadgeIds = bookings.flatMap(b => b.earned_badges || [])
+
   return (
     <div className={activeThemeClass} style={{ transition: 'all 0.5s ease' }}>
       
@@ -147,6 +151,11 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
 
         {/* Welcome Header Hero */}
         <WelcomeHero student={student} isJunior={isJunior} />
+
+        {/* Gamified Achievement Showcase */}
+        <div style={{ marginBottom: '2.5rem' }}>
+          <BadgeShowcase earnedBadgeIds={allEarnedBadgeIds} />
+        </div>
 
         {/* Pulsing Live Classroom Section */}
         <ClassroomSection booking={activeBooking} studentName={student.first_name} isJunior={isJunior} />
