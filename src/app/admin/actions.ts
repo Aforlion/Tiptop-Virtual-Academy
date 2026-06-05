@@ -406,4 +406,135 @@ export async function sendChatMessage(
   return { success: true };
 }
 
+// ============================================================
+// ASSESSMENT & QUIZ ENGINE SUBMISSIONS
+// ============================================================
+
+export async function submitAssessmentResponse(
+  prevState: any,
+  formData: FormData
+): Promise<ActionResult> {
+  const studentId = formData.get('studentId') as string;
+  const assessmentId = formData.get('assessmentId') as string;
+  const timeSpentSecs = parseInt(formData.get('timeSpentSecs') as string || '0', 10);
+  const responsesJson = formData.get('responses') as string; // JSON string of responses: { [questionId: string]: any }
+
+  if (!studentId || !assessmentId || !responsesJson) {
+    return { success: false, error: 'Student, assessment, and responses are required.' };
+  }
+
+  const supabase = await createClient();
+
+  // 1. Fetch questions to grade
+  const { data: questions, error: qErr } = await supabase
+    .from('assessment_questions')
+    .select('*')
+    .eq('assessment_id', assessmentId);
+
+  if (qErr || !questions) {
+    return { success: false, error: 'Failed to fetch assessment questions for grading.' };
+  }
+
+  const userAnswers = JSON.parse(responsesJson);
+  let totalScore = 0;
+  let maxScore = 0;
+  let correctCount = 0;
+  let incorrectCount = 0;
+  let skippedCount = 0;
+  const responseLogs: any[] = [];
+
+  questions.forEach((q: any) => {
+    const userAnswer = userAnswers[q.id];
+    const correctAnswer = q.correct_answer;
+    maxScore += q.points;
+
+    let isCorrect = false;
+    let isSkipped = userAnswer === undefined || userAnswer === null || userAnswer === '' || (Array.isArray(userAnswer) && userAnswer.length === 0);
+
+    if (isSkipped) {
+      skippedCount++;
+    } else {
+      if (q.question_type === 'mcq_single' || q.question_type === 'reading') {
+        isCorrect = String(userAnswer).trim().toLowerCase() === String(correctAnswer).trim().toLowerCase();
+      } else if (q.question_type === 'fill_in') {
+        isCorrect = String(userAnswer).trim().toLowerCase() === String(correctAnswer).trim().toLowerCase();
+      } else if (q.question_type === 'mcq_multiple') {
+        if (Array.isArray(userAnswer) && Array.isArray(correctAnswer)) {
+          const sortedUser = [...userAnswer].map(s => String(s).trim().toLowerCase()).sort();
+          const sortedCorrect = [...correctAnswer].map(s => String(s).trim().toLowerCase()).sort();
+          isCorrect = JSON.stringify(sortedUser) === JSON.stringify(sortedCorrect);
+        }
+      }
+
+      if (isCorrect) {
+        correctCount++;
+        totalScore += q.points;
+      } else {
+        incorrectCount++;
+      }
+    }
+
+    responseLogs.push({
+      question_id: q.id,
+      user_answer: userAnswer,
+      is_correct: isCorrect,
+      time_spent_secs: 0, // simple mock tracking per question
+    });
+  });
+
+  const percentage = maxScore > 0 ? parseFloat(((totalScore / maxScore) * 100).toFixed(2)) : 0;
+
+  // 2. Insert submission
+  const { data: submission, error: subErr } = await supabase
+    .from('assessment_submissions')
+    .insert({
+      student_id: studentId,
+      assessment_id: assessmentId,
+      score: totalScore,
+      percentage: percentage,
+      correct_count: correctCount,
+      incorrect_count: incorrectCount,
+      skipped_count: skippedCount,
+      time_spent_secs: timeSpentSecs,
+      responses: responseLogs,
+    })
+    .select()
+    .single();
+
+  if (subErr || !submission) {
+    return { success: false, error: subErr?.message || 'Failed to record assessment submission.' };
+  }
+
+  // 3. Award Gamification XP points (Phase 3 integration)
+  // 10 XP per correct question
+  const xpEarned = correctCount * 10;
+  if (xpEarned > 0) {
+    await supabase.from('student_xp_transactions').insert({
+      student_id: studentId,
+      amount: xpEarned,
+      reason: 'streak_bonus',
+      reference_id: submission.id,
+    });
+  }
+
+  // Extra 50 XP perfect score bonus
+  if (percentage === 100) {
+    await supabase.from('student_xp_transactions').insert({
+      student_id: studentId,
+      amount: 50,
+      reason: 'challenge_completed',
+      reference_id: submission.id,
+    });
+  }
+
+  revalidatePath('/parent/reports');
+  revalidatePath('/student/dashboard');
+
+  return {
+    success: true,
+    message: `Assessment submitted! You got ${correctCount} correct. Earned ${xpEarned + (percentage === 100 ? 50 : 0)} XP!`,
+  };
+}
+
+
 

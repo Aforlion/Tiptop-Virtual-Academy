@@ -83,6 +83,11 @@ export default function Sidebar({ role }: SidebarProps) {
         icon: CreditCard,
       },
       {
+        label: 'Progress Reports',
+        href: '/parent/reports',
+        icon: ScrollText,
+      },
+      {
         label: 'Community',
         href: '/community',
         icon: MessageSquare,

@@ -232,3 +232,49 @@ export interface CertificateTemplate {
   created_at: string;
   courses?: Course;
 }
+
+// ---- Assessment & Quiz Engine ----
+
+export interface Assessment {
+  id: string;
+  course_id: string;
+  title: string;
+  description: string | null;
+  time_limit_mins: number;
+  created_at: string;
+}
+
+export interface AssessmentQuestion {
+  id: string;
+  assessment_id: string;
+  question_text: string;
+  question_type: 'mcq_single' | 'mcq_multiple' | 'fill_in' | 'reading';
+  options: string[];
+  correct_answer: any;
+  difficulty: 'easy' | 'medium' | 'hard';
+  points: number;
+  passage_text: string | null;
+  created_at: string;
+}
+
+export interface AssessmentSubmission {
+  id: string;
+  student_id: string;
+  assessment_id: string;
+  score: number;
+  percentage: number;
+  correct_count: number;
+  incorrect_count: number;
+  skipped_count: number;
+  time_spent_secs: number;
+  responses: Array<{
+    question_id: string;
+    user_answer: any;
+    is_correct: boolean;
+    time_spent_secs: number;
+  }>;
+  created_at: string;
+  students?: Student;
+  assessments?: Assessment;
+}
+
