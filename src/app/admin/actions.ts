@@ -414,16 +414,58 @@ export async function submitAssessmentResponse(
   prevState: any,
   formData: FormData
 ): Promise<ActionResult> {
-  const studentId = formData.get('studentId') as string;
-  const assessmentId = formData.get('assessmentId') as string;
+  const rawStudentId  = formData.get('studentId') as string;
+  const assessmentId  = formData.get('assessmentId') as string;
   const timeSpentSecs = parseInt(formData.get('timeSpentSecs') as string || '0', 10);
-  const responsesJson = formData.get('responses') as string; // JSON string of responses: { [questionId: string]: any }
+  const responsesJson = formData.get('responses') as string;
 
-  if (!studentId || !assessmentId || !responsesJson) {
+  if (!rawStudentId || !assessmentId || !responsesJson) {
     return { success: false, error: 'Student, assessment, and responses are required.' };
   }
 
+  // Validate UUID format to prevent injection / enumeration attacks
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(rawStudentId) || !uuidRegex.test(assessmentId)) {
+    return { success: false, error: 'Invalid submission parameters.' };
+  }
+
   const supabase = await createClient();
+
+  // ── CVE-1 FIX: Verify caller identity and student ownership ──────────────
+  // Never trust the studentId from the form; the parent must own the student.
+  const { data: { user }, error: authErr } = await supabase.auth.getUser();
+  if (authErr || !user) {
+    return { success: false, error: 'Unauthorized: Please log in.' };
+  }
+
+  // Check role — teachers and admins can submit on behalf of any student
+  const { data: callerProfile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  const isPrivileged = callerProfile?.role === 'admin' || callerProfile?.role === 'teacher';
+
+  if (!isPrivileged) {
+    // For parents: verify the student belongs to them
+    const { data: ownedStudent, error: ownershipErr } = await supabase
+      .from('students')
+      .select('id')
+      .eq('id', rawStudentId)
+      .eq('parent_id', user.id)
+      .single();
+
+    if (ownershipErr || !ownedStudent) {
+      return {
+        success: false,
+        error: 'Forbidden: You do not have permission to submit for this student.',
+      };
+    }
+  }
+  // ── End ownership check ──────────────────────────────────────────────────
+
+  const studentId = rawStudentId; // Now verified to be safe
 
   // 1. Fetch questions to grade
   const { data: questions, error: qErr } = await supabase
