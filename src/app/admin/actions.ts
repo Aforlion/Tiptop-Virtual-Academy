@@ -243,3 +243,167 @@ export async function createTeacherAccountAction(
   };
 }
 
+// ============================================================
+// CERTIFICATE TEMPLATES — admin-managed per-course certificates
+// ============================================================
+
+export async function saveCertificateTemplate(
+  prevState: unknown,
+  formData: FormData
+): Promise<ActionResult> {
+  const courseId      = formData.get('courseId') as string;
+  const titleText     = formData.get('titleText') as string;
+  const bodyText      = formData.get('bodyText') as string;
+  const signatoryName = formData.get('signatoryName') as string;
+  const signatoryTitle= formData.get('signatoryTitle') as string;
+  const accentColor   = formData.get('accentColor') as string;
+
+  if (!courseId || !titleText || !bodyText || !signatoryName) {
+    return { success: false, error: 'All fields are required.' };
+  }
+
+  const supabase = await createClient();
+  if (!(await checkAdmin(supabase))) {
+    return { success: false, error: 'Forbidden: Administrator privileges required.' };
+  }
+
+  const { error } = await supabase
+    .from('certificate_templates')
+    .upsert({
+      course_id:       courseId,
+      title_text:      titleText,
+      body_text:       bodyText,
+      signatory_name:  signatoryName,
+      signatory_title: signatoryTitle,
+      accent_color:    accentColor || '#7c3aed',
+    }, { onConflict: 'course_id' });
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath('/admin/certificates');
+  return { success: true, message: 'Certificate template saved!' };
+}
+
+// ============================================================
+// FORUM POSTS
+// ============================================================
+
+export async function createForumPost(
+  prevState: unknown,
+  formData: FormData
+): Promise<ActionResult> {
+  const channelId = formData.get('channelId') as string;
+  const title     = formData.get('title') as string;
+  const body      = formData.get('body') as string;
+
+  if (!channelId || !title?.trim() || !body?.trim()) {
+    return { success: false, error: 'Channel, title, and body are required.' };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('first_name, last_name, role')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile) return { success: false, error: 'Profile not found.' };
+
+  const authorName = `${profile.first_name} ${profile.last_name}`;
+
+  const { error } = await supabase.from('forum_posts').insert({
+    channel_id:  channelId,
+    author_id:   user.id,
+    author_name: authorName,
+    author_role: profile.role,
+    title:       title.trim(),
+    body:        body.trim(),
+  });
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath(`/community/${channelId}`);
+  revalidatePath('/community');
+  revalidatePath('/admin/community');
+  return { success: true, message: 'Post created!' };
+}
+
+export async function createForumReply(
+  prevState: unknown,
+  formData: FormData
+): Promise<ActionResult> {
+  const postId    = formData.get('postId') as string;
+  const channelId = formData.get('channelId') as string;
+  const body      = formData.get('body') as string;
+
+  if (!postId || !body?.trim()) {
+    return { success: false, error: 'Reply body is required.' };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('first_name, last_name, role')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile) return { success: false, error: 'Profile not found.' };
+
+  const { error } = await supabase.from('forum_replies').insert({
+    post_id:     postId,
+    author_id:   user.id,
+    author_name: `${profile.first_name} ${profile.last_name}`,
+    author_role: profile.role,
+    body:        body.trim(),
+  });
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath(`/community/${channelId}`);
+  revalidatePath(`/admin/community`);
+  return { success: true, message: 'Reply posted!' };
+}
+
+// ============================================================
+// CHAT MESSAGES — real-time classroom chat
+// ============================================================
+
+export async function sendChatMessage(
+  sessionId: string,
+  body: string
+): Promise<ActionResult> {
+  if (!sessionId || !body?.trim()) {
+    return { success: false, error: 'Message cannot be empty.' };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('first_name, last_name, role')
+    .eq('id', user.id)
+    .single();
+
+  if (!profile) return { success: false, error: 'Profile not found.' };
+
+  const { error } = await supabase.from('chat_messages').insert({
+    session_id:  sessionId,
+    sender_id:   user.id,
+    sender_name: `${profile.first_name} ${profile.last_name}`,
+    sender_role: profile.role,
+    body:        body.trim(),
+  });
+
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+

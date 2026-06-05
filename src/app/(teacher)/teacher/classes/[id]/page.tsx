@@ -2,6 +2,7 @@ import React from 'react';
 import { createClient } from '@/lib/supabase/server';
 import PageHeader from '@/components/layout/PageHeader';
 import AttendanceClient from './components/AttendanceClient';
+import ChatPanel from './components/ChatPanel';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
@@ -115,13 +116,33 @@ export default async function TeacherClassPage({ params }: PageProps) {
           </Link>
         }
       />
-      <AttendanceClient
-        sessionId={session.id}
-        initialBookings={formattedBookings}
-        courseTitle={session.courses?.title || 'Unknown Course'}
-        sessionTime={`${formattedDate} at ${formattedTime}`}
-        sessionType={session.session_type}
-      />
+      
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: '2rem', alignItems: 'start' }} className="teacher-class-layout">
+        <div>
+          <AttendanceClient
+            sessionId={session.id}
+            initialBookings={formattedBookings}
+            courseTitle={session.courses?.title || 'Unknown Course'}
+            sessionTime={`${formattedDate} at ${formattedTime}`}
+            sessionType={session.session_type}
+          />
+        </div>
+        <div>
+          <ChatPanel
+            sessionId={session.id}
+            currentUserId={user.id}
+            currentUserRole={profile?.role || 'teacher'}
+          />
+        </div>
+      </div>
+
+      <style>{`
+        @media (max-width: 1024px) {
+          .teacher-class-layout {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </>
   );
 }

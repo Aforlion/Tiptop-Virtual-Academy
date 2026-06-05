@@ -93,17 +93,7 @@ export default async function CourseCatalogPage() {
         action={<CreditBalance credits={parentProfile.flexible_credits} />}
       />
 
-      {schemaError && (
-        <div className="glass-card" style={{ 
-          background: 'rgba(245, 158, 11, 0.1)',
-          border: '1px solid rgba(245, 158, 11, 0.3)',
-          marginBottom: '2rem'
-        }}>
-          <p style={{ color: '#f59e0b', fontSize: '0.9rem', fontWeight: 500 }}>
-            ⚠️ Running in offline sandbox mode. Copy the Postgres script in **migration_001_foundation.sql** and run it in the Supabase SQL editor to connect your actual database tables.
-          </p>
-        </div>
-      )}
+
 
       <CatalogClient 
         courses={courses} 

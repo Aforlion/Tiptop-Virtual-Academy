@@ -201,3 +201,127 @@ export async function deleteLessonPlan(id: string): Promise<ActionResult> {
   revalidatePath('/teacher/lessons');
   return { success: true };
 }
+
+// ============================================================
+// AVAILABILITY — save a teacher's weekly availability slots
+// ============================================================
+
+export interface AvailabilitySlot {
+  day_of_week: number; // 0-6
+  start_time: string;  // 'HH:MM'
+  end_time: string;    // 'HH:MM'
+}
+
+export async function saveAvailability(
+  slots: AvailabilitySlot[]
+): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  const { data: { user }, error: userErr } = await supabase.auth.getUser();
+  if (userErr || !user) return { success: false, error: 'Unauthorized' };
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
+    return { success: false, error: 'Unauthorized: Only teachers can set availability.' };
+  }
+
+  // Delete all existing slots for this teacher and replace with the new set
+  const { error: deleteErr } = await supabase
+    .from('teacher_availability')
+    .delete()
+    .eq('teacher_id', user.id);
+
+  if (deleteErr) return { success: false, error: deleteErr.message };
+
+  if (slots.length === 0) {
+    revalidatePath('/teacher/availability');
+    return { success: true, message: 'Availability cleared.' };
+  }
+
+  const rows = slots.map(s => ({
+    teacher_id: user.id,
+    day_of_week: s.day_of_week,
+    start_time: s.start_time,
+    end_time: s.end_time,
+  }));
+
+  const { error: insertErr } = await supabase
+    .from('teacher_availability')
+    .insert(rows);
+
+  if (insertErr) return { success: false, error: insertErr.message };
+
+  revalidatePath('/teacher/availability');
+  return { success: true, message: 'Availability saved successfully!' };
+}
+
+// ============================================================
+// COHORT ROSTER — enrol / remove students
+// ============================================================
+
+export async function enrollStudentInCohort(
+  studentId: string,
+  courseId: string
+): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const { error } = await supabase
+    .from('cohort_enrollments')
+    .insert({ student_id: studentId, course_id: courseId });
+
+  if (error) {
+    if (error.code === '23505') return { success: false, error: 'Student is already enrolled.' };
+    return { success: false, error: error.message };
+  }
+
+  revalidatePath('/teacher/cohorts');
+  return { success: true, message: 'Student enrolled successfully.' };
+}
+
+export async function removeStudentFromCohort(
+  enrollmentId: string
+): Promise<ActionResult> {
+  const supabase = await createClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.role !== 'teacher' && profile?.role !== 'admin') {
+    return { success: false, error: 'Unauthorized' };
+  }
+
+  const { error } = await supabase
+    .from('cohort_enrollments')
+    .delete()
+    .eq('id', enrollmentId);
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath('/teacher/cohorts');
+  return { success: true, message: 'Student removed from cohort.' };
+}
+

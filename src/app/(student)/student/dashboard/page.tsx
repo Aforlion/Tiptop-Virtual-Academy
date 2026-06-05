@@ -1,5 +1,11 @@
 import React from 'react'
-import { getStudentById, getBookingsByStudent } from '@/lib/queries'
+import { 
+  getStudentById, 
+  getBookingsByStudent, 
+  getStudentChallenges, 
+  getLeaderboards, 
+  getStudentStreaks 
+} from '@/lib/queries'
 import { calculateAge, getAgeBracket, getMockDateOffset } from '@/lib/utils'
 import Link from 'next/link'
 import { ArrowLeft, LogOut } from 'lucide-react'
@@ -9,7 +15,7 @@ import WelcomeHero from '../components/WelcomeHero'
 import ClassroomSection from '../components/ClassroomSection'
 import SchedulePanel from '../components/SchedulePanel'
 import ExplorationPanel from '../components/ExplorationPanel'
-import BadgeShowcase from '../components/BadgeShowcase'
+import GamificationCenter from '../components/GamificationCenter'
 import { Student, BookingWithDetails } from '@/lib/types'
 
 export const dynamic = 'force-dynamic'
@@ -26,6 +32,10 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
 
   let student: Student | null = null
   let bookings: BookingWithDetails[] = []
+  
+  let challengesData: any[] = []
+  let leaderboardData = { allTime: [] as any[], weekly: [] as any[] }
+  let streakData = { currentStreak: 0, lastSevenDays: [] as any[] }
 
   try {
     if (studentId && studentId !== 'demo') {
@@ -35,10 +45,20 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
       if (!studentErr && !bookingsErr && studentData) {
         student = studentData
         bookings = bookingsData || []
+
+        // Fetch student gamification details
+        const { data: challs } = await getStudentChallenges(student.id)
+        if (challs) challengesData = challs
+
+        const { allTime, weekly } = await getLeaderboards(student.id)
+        leaderboardData = { allTime, weekly }
+
+        const { currentStreak, lastSevenDays } = await getStudentStreaks(student.id)
+        streakData = { currentStreak, lastSevenDays }
       }
     }
-  } catch {
-    // Ignore error, fallback below handles it
+  } catch (err) {
+    console.error('Failed to fetch student gamification details:', err)
   }
 
   // Fallback default student if none provided in search param (for direct link testing)
@@ -49,7 +69,48 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
       first_name: 'Aiden',
       date_of_birth: manualAgeToggle === 'older' ? '2015-05-15' : '2021-08-14',
       notes: 'Loves stars and simple puzzles.',
+      xp: 240,
       created_at: ''
+    }
+  }
+
+  // Fallback gamification details for demonstration / testing
+  if (challengesData.length === 0) {
+    challengesData = [
+      { id: 'c1', title: 'Class Explorer', description: 'Attend 3 live learning sessions', xp_reward: 300, target_count: 3, progress_count: 1, completed: false },
+      { id: 'c2', title: 'Logic Wizard', description: 'Earn the Logic Wizard badge (🧠) for writing bug-free loops', xp_reward: 150, target_count: 1, progress_count: 0, completed: false },
+      { id: 'c3', title: 'Science Explorer', description: 'Earn the Space Explorer badge (🚀) for stellar calculations', xp_reward: 150, target_count: 1, progress_count: 0, completed: false },
+      { id: 'c4', title: 'Dino Hunter', description: 'Earn the Dino Discovery badge (🦖) for digging up history secrets', xp_reward: 150, target_count: 1, progress_count: 0, completed: false }
+    ]
+  }
+
+  if (leaderboardData.allTime.length === 0) {
+    leaderboardData = {
+      allTime: [
+        { rank: 1, student_id: 's-1', first_name: 'Tiana', total_xp: 3200, weekly_xp: 600, league_tier: 'Gold', is_current_student: false },
+        { rank: 2, student_id: student.id, first_name: student.first_name, total_xp: student.xp || 240, weekly_xp: 100, league_tier: 'Bronze', is_current_student: true },
+        { rank: 3, student_id: 's-3', first_name: 'Mateo', total_xp: 150, weekly_xp: 150, league_tier: 'Bronze', is_current_student: false }
+      ],
+      weekly: [
+        { rank: 1, student_id: 's-1', first_name: 'Tiana', total_xp: 3200, weekly_xp: 600, league_tier: 'Gold', is_current_student: false },
+        { rank: 2, student_id: 's-3', first_name: 'Mateo', total_xp: 150, weekly_xp: 150, league_tier: 'Bronze', is_current_student: false },
+        { rank: 3, student_id: student.id, first_name: student.first_name, total_xp: student.xp || 240, weekly_xp: 100, league_tier: 'Bronze', is_current_student: true }
+      ]
+    }
+  }
+
+  if (streakData.lastSevenDays.length === 0) {
+    streakData = {
+      currentStreak: 2,
+      lastSevenDays: [
+        { dayName: 'Sat', dateString: '2026-05-30', active: false },
+        { dayName: 'Sun', dateString: '2026-05-31', active: false },
+        { dayName: 'Mon', dateString: '2026-06-01', active: false },
+        { dayName: 'Tue', dateString: '2026-06-02', active: false },
+        { dayName: 'Wed', dateString: '2026-06-03', active: true },
+        { dayName: 'Thu', dateString: '2026-06-04', active: true },
+        { dayName: 'Fri', dateString: '2026-06-05', active: false }
+      ]
     }
   }
 
@@ -91,7 +152,7 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
             title: isJunior ? 'Creative Coding & Logic Loops' : 'Cosmic Astrophysics for Tiny Minds',
             description: isJunior ? 'Learn code using playful color loops and puzzles!' : 'Explore stars, gravity, and the quantum cosmos.',
             min_age: isJunior ? 3 : 7,
-            max_age: isJunior ? 6 : 12,
+            max_age: isJunior ? 12 : 12,
             is_published: true,
             created_at: ''
           }
@@ -154,7 +215,15 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
 
         {/* Gamified Achievement Showcase */}
         <div style={{ marginBottom: '2.5rem' }}>
-          <BadgeShowcase earnedBadgeIds={allEarnedBadgeIds} />
+          <GamificationCenter
+            studentName={student.first_name}
+            studentXp={student.xp || 0}
+            earnedBadgeIds={allEarnedBadgeIds}
+            challenges={challengesData}
+            leaderboard={leaderboardData}
+            streak={streakData}
+            isJunior={isJunior}
+          />
         </div>
 
         {/* Pulsing Live Classroom Section */}
@@ -170,3 +239,4 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
     </div>
   )
 }
+

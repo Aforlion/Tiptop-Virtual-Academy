@@ -123,18 +123,7 @@ export default async function ParentDashboardPage() {
         action={<CreditBalance credits={parentProfile.flexible_credits} />}
       />
 
-      {/* DB Error Notification if tables not set up yet */}
-      {schemaError && (
-        <div className="glass-card" style={{ 
-          background: 'rgba(245, 158, 11, 0.1)',
-          border: '1px solid rgba(245, 158, 11, 0.3)',
-          marginBottom: '2rem'
-        }}>
-          <p style={{ color: '#f59e0b', fontSize: '0.9rem', fontWeight: 500 }}>
-            ⚠️ Running in offline sandbox mode. To connect this live booking form to your actual database, please ensure you copy the Postgres script in **migration_001_foundation.sql** and run it inside your Supabase project&apos;s SQL editor.
-          </p>
-        </div>
-      )}
+
 
       <div className="grid-2" style={{ marginBottom: '2.5rem', alignItems: 'start' }}>
         <AddChildForm />

@@ -11,7 +11,13 @@ import {
   CreditCard,
   Users,
   Briefcase,
-  MonitorPlay
+  MonitorPlay,
+  CalendarDays,
+  DollarSign,
+  Users2,
+  MessageSquare,
+  Hash,
+  ScrollText,
 } from 'lucide-react';
 import { signout } from '@/app/auth/actions';
 
@@ -49,6 +55,16 @@ export default function Sidebar({ role }: SidebarProps) {
         href: '/admin/finance',
         icon: Briefcase,
       },
+      {
+        label: 'Community Hub',
+        href: '/admin/community',
+        icon: Hash,
+      },
+      {
+        label: 'Certificates',
+        href: '/admin/certificates',
+        icon: ScrollText,
+      },
     ],
     parent: [
       {
@@ -66,6 +82,11 @@ export default function Sidebar({ role }: SidebarProps) {
         href: '/parent/billing',
         icon: CreditCard,
       },
+      {
+        label: 'Community',
+        href: '/community',
+        icon: MessageSquare,
+      },
     ],
     teacher: [
       {
@@ -78,12 +99,42 @@ export default function Sidebar({ role }: SidebarProps) {
         href: '/teacher/lessons',
         icon: BookOpen,
       },
+      {
+        label: 'My Availability',
+        href: '/teacher/availability',
+        icon: CalendarDays,
+      },
+      {
+        label: 'Earnings',
+        href: '/teacher/earnings',
+        icon: DollarSign,
+      },
+      {
+        label: 'Cohort Rosters',
+        href: '/teacher/cohorts',
+        icon: Users2,
+      },
+      {
+        label: 'Community',
+        href: '/community',
+        icon: MessageSquare,
+      },
     ],
     student: [
       {
         label: 'Academy Nexus',
         href: '/student/dashboard',
         icon: GraduationCap,
+      },
+      {
+        label: 'Certificates',
+        href: '/student/certificates',
+        icon: ScrollText,
+      },
+      {
+        label: 'Community',
+        href: '/community',
+        icon: MessageSquare,
       },
     ]
   }[role];
