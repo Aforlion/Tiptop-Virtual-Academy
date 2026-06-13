@@ -4,14 +4,18 @@ import { Sparkles } from 'lucide-react';
 
 interface AgeSwitcherProps {
   studentId: string;
-  isJunior: boolean;
+  ageBracket: 'junior' | 'senior' | 'teen';
 }
 
-export default function AgeSwitcher({ studentId, isJunior }: AgeSwitcherProps) {
+export default function AgeSwitcher({ studentId, ageBracket }: AgeSwitcherProps) {
+  const isJunior = ageBracket === 'junior';
+  const isSenior = ageBracket === 'senior';
+  const isTeen = ageBracket === 'teen';
+
   return (
     <div style={{
-      background: isJunior ? '#fef3c7' : '#0f172a',
-      borderBottom: isJunior ? '3px dashed #fcd34d' : '1px solid rgba(6, 182, 212, 0.3)',
+      background: isJunior ? '#fef3c7' : isTeen ? '#0f172a' : '#030712',
+      borderBottom: isJunior ? '3px dashed #fcd34d' : isTeen ? '1px solid #1f2937' : '1px solid rgba(6, 182, 212, 0.3)',
       padding: '0.75rem 1.5rem',
       display: 'flex',
       justifyContent: 'space-between',
@@ -20,8 +24,8 @@ export default function AgeSwitcher({ studentId, isJunior }: AgeSwitcherProps) {
       position: 'relative'
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        <Sparkles style={{ width: '18px', height: '18px', color: isJunior ? '#ff7e5f' : '#22d3ee' }} />
-        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: isJunior ? '#1e1b4b' : '#22d3ee' }}>
+        <Sparkles style={{ width: '18px', height: '18px', color: isJunior ? '#ff7e5f' : isTeen ? '#818cf8' : '#22d3ee' }} />
+        <span style={{ fontSize: '0.85rem', fontWeight: 700, color: isJunior ? '#1e1b4b' : isTeen ? '#f1f5f9' : '#22d3ee' }}>
           Interactive Demo Controller
         </span>
       </div>
@@ -35,7 +39,7 @@ export default function AgeSwitcher({ studentId, isJunior }: AgeSwitcherProps) {
             fontSize: '0.75rem',
             fontWeight: 700,
             background: isJunior ? '#ff7e5f' : 'transparent',
-            color: isJunior ? '#fff' : '#9ca3af',
+            color: isJunior ? '#fff' : isTeen ? '#9ca3af' : '#9ca3af',
             border: isJunior ? '2px solid #fff' : '1px solid rgba(255,255,255,0.1)',
           }}
         >
@@ -48,12 +52,26 @@ export default function AgeSwitcher({ studentId, isJunior }: AgeSwitcherProps) {
             borderRadius: '9999px',
             fontSize: '0.75rem',
             fontWeight: 700,
-            background: !isJunior ? '#06b6d4' : 'transparent',
-            color: !isJunior ? '#fff' : '#475569',
-            border: !isJunior ? '2px solid #22d3ee' : '1px solid rgba(0,0,0,0.1)',
+            background: isSenior ? '#06b6d4' : 'transparent',
+            color: isSenior ? '#fff' : '#475569',
+            border: isSenior ? '2px solid #22d3ee' : '1px solid rgba(255,255,255,0.1)',
           }}
         >
           Senior Portal (Ages 7-12)
+        </Link>
+        <Link 
+          href={`/student/dashboard?studentId=${studentId}&testAge=teen`}
+          style={{
+            padding: '0.25rem 0.75rem',
+            borderRadius: '9999px',
+            fontSize: '0.75rem',
+            fontWeight: 700,
+            background: isTeen ? '#4f46e5' : 'transparent',
+            color: isTeen ? '#fff' : '#475569',
+            border: isTeen ? '2px solid #6366f1' : '1px solid rgba(255,255,255,0.1)',
+          }}
+        >
+          Teen Portal (Ages 13-16)
         </Link>
       </div>
     </div>

@@ -116,14 +116,24 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
 
   // Calculate age for age-adaptation (Rule 3)
   let age = calculateAge(student.date_of_birth)
-  if (manualAgeToggle === 'older') {
+  if (manualAgeToggle === 'teen') {
+    age = 14 // force 13-16 teen layout
+  } else if (manualAgeToggle === 'older') {
     age = 9 // force 7-12 senior layout
   } else if (manualAgeToggle === 'younger') {
     age = 4 // force 3-6 junior layout
   }
 
-  const isJunior = getAgeBracket(age) === 'junior'
-  const activeThemeClass = isJunior ? 'kid-theme' : 'older-kid-theme'
+  const ageBracket = getAgeBracket(age)
+  const isJunior = ageBracket === 'junior'
+  const isTeen = ageBracket === 'teen'
+
+  let activeThemeClass = 'older-kid-theme'
+  if (isJunior) {
+    activeThemeClass = 'kid-theme'
+  } else if (isTeen) {
+    activeThemeClass = 'teen-theme'
+  }
 
   // Fallback booked sessions for demonstration
   if (bookings.length === 0) {
@@ -149,10 +159,10 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
           created_at: '',
           courses: {
             id: 'c-mock',
-            title: isJunior ? 'Creative Coding & Logic Loops' : 'Cosmic Astrophysics for Tiny Minds',
-            description: isJunior ? 'Learn code using playful color loops and puzzles!' : 'Explore stars, gravity, and the quantum cosmos.',
-            min_age: isJunior ? 3 : 7,
-            max_age: isJunior ? 12 : 12,
+            title: isJunior ? 'Creative Coding & Logic Loops' : isTeen ? 'Advanced Web Architecture & Systems' : 'Cosmic Astrophysics for Tiny Minds',
+            description: isJunior ? 'Learn code using playful color loops and puzzles!' : isTeen ? 'Master state machines, database ledgers, and API design.' : 'Explore stars, gravity, and the quantum cosmos.',
+            min_age: isJunior ? 3 : isTeen ? 13 : 7,
+            max_age: isJunior ? 6 : isTeen ? 16 : 12,
             is_published: true,
             created_at: ''
           }
@@ -162,7 +172,7 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
   }
 
   const activeBooking = bookings[0]
-  const portalTitle = isJunior ? 'Junior Academy Dashboard' : 'Nexus Learner Terminal'
+  const portalTitle = isJunior ? 'Junior Academy Dashboard' : isTeen ? 'Teen Workspace Terminal' : 'Nexus Learner Terminal'
 
   // Collect all earned badge IDs
   const allEarnedBadgeIds = bookings.flatMap(b => b.earned_badges || [])
@@ -171,7 +181,7 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
     <div className={activeThemeClass} style={{ transition: 'all 0.5s ease' }}>
       
       {/* Dev Switcher */}
-      <AgeSwitcher studentId={studentId || 'demo'} isJunior={isJunior} />
+      <AgeSwitcher studentId={studentId || 'demo'} ageBracket={ageBracket} />
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
         
@@ -182,15 +192,15 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
             className="btn-secondary" 
             style={{
               borderRadius: isJunior ? '9999px' : 'var(--radius-md)',
-              background: isJunior ? '#fff' : 'rgba(255,255,255,0.02)',
-              borderColor: isJunior ? '#e2e8f0' : 'rgba(6, 182, 212, 0.2)',
+              background: isJunior ? '#fff' : isTeen ? '#111827' : 'rgba(255,255,255,0.02)',
+              borderColor: isJunior ? '#e2e8f0' : isTeen ? '#1f2937' : 'rgba(6, 182, 212, 0.2)',
               color: isJunior ? '#475569' : '#fff'
             }}
           >
             <ArrowLeft style={{ width: '16px', height: '16px' }} /> Return to Parent Room
           </Link>
 
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: isJunior ? '1.5rem' : '1.25rem', color: isJunior ? '#1e1b4b' : '#22d3ee' }}>
+          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: isJunior ? '1.5rem' : '1.25rem', color: isJunior ? '#1e1b4b' : isTeen ? '#818cf8' : '#22d3ee' }}>
             {portalTitle}
           </h2>
 
@@ -201,8 +211,8 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
               style={{
                 borderRadius: isJunior ? '9999px' : 'var(--radius-md)',
                 color: '#ef4444',
-                borderColor: isJunior ? '#fca5a5' : 'rgba(220, 38, 38, 0.2)',
-                background: isJunior ? '#fff' : 'transparent'
+                borderColor: isJunior ? '#fca5a5' : isTeen ? '#ef4444' : 'rgba(220, 38, 38, 0.2)',
+                background: isJunior ? '#fff' : isTeen ? 'transparent' : 'transparent'
               }}
             >
               <LogOut style={{ width: '16px', height: '16px' }} /> Leave Academy
@@ -211,20 +221,22 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
         </div>
 
         {/* Welcome Header Hero */}
-        <WelcomeHero student={student} isJunior={isJunior} />
+        <WelcomeHero student={student} isJunior={isJunior} isTeen={isTeen} />
 
         {/* Gamified Achievement Showcase */}
-        <div style={{ marginBottom: '2.5rem' }}>
-          <GamificationCenter
-            studentName={student.first_name}
-            studentXp={student.xp || 0}
-            earnedBadgeIds={allEarnedBadgeIds}
-            challenges={challengesData}
-            leaderboard={leaderboardData}
-            streak={streakData}
-            isJunior={isJunior}
-          />
-        </div>
+        {!isTeen && (
+          <div style={{ marginBottom: '2.5rem' }}>
+            <GamificationCenter
+              studentName={student.first_name}
+              studentXp={student.xp || 0}
+              earnedBadgeIds={allEarnedBadgeIds}
+              challenges={challengesData}
+              leaderboard={leaderboardData}
+              streak={streakData}
+              isJunior={isJunior}
+            />
+          </div>
+        )}
 
         {/* Pulsing Live Classroom Section */}
         <ClassroomSection booking={activeBooking} studentName={student.first_name} isJunior={isJunior} />

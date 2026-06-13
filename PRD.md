@@ -1,7 +1,7 @@
 # Product Requirement Document (PRD): Tiptop Virtual Academy
 
 ## 1. Executive Summary & Vision
-An online learning academy specialized for learners aged 3 to 12. The platform operates on a hybrid instructional architecture: hosting long-term fixed cohorts alongside flexible, open-booking live interactive classrooms.
+An online learning academy specialized for learners aged 3 to 16. The platform operates on a hybrid instructional architecture: hosting long-term fixed cohorts alongside flexible, open-booking live interactive classrooms.
 
 The software acts as a technical partner on top of pedagogical domain expertise. It structures a strict operational split: parents manage billing, timetables, and authentication, while children interact with live video streams.
 

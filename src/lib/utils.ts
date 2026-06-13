@@ -15,8 +15,10 @@ export function calculateAge(dobString: string): number {
 /**
  * Returns age bracket for kid adaptation layout rules.
  */
-export function getAgeBracket(age: number): 'junior' | 'senior' {
-  return age <= 6 ? 'junior' : 'senior';
+export function getAgeBracket(age: number): 'junior' | 'senior' | 'teen' {
+  if (age <= 6) return 'junior';
+  if (age <= 12) return 'senior';
+  return 'teen';
 }
 
 /**
