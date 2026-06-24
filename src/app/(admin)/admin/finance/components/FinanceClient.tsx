@@ -40,7 +40,7 @@ export default function FinanceClient({ initialPayments }: FinanceClientProps) {
   const columns: Column<PaymentData>[] = [
     {
       header: 'Date',
-      accessor: (payment) => new Date(payment.created_at).toLocaleDateString(),
+      accessor: (payment) => payment.created_at ? new Date(payment.created_at).toLocaleDateString() : 'N/A',
     },
     {
       header: 'Parent Name',

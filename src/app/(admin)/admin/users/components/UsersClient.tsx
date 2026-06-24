@@ -93,7 +93,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
     },
     {
       header: 'Joined',
-      accessor: (user) => new Date(user.created_at).toLocaleDateString(),
+      accessor: (user) => user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A',
     }
   ];
 
