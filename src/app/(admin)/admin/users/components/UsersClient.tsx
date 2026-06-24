@@ -38,16 +38,16 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
   }, [state]);
 
   const getRoleBadgeColor = (role: string) => {
-    switch(role) {
+    switch (role) {
       case 'admin': return 'rgba(168, 85, 247, 0.2)'; // purple
       case 'teacher': return 'rgba(56, 189, 248, 0.2)'; // blue
       case 'parent': return 'rgba(232, 28, 255, 0.2)'; // pink
       default: return 'rgba(255, 255, 255, 0.1)';
     }
   };
-  
+
   const getRoleTextColor = (role: string) => {
-    switch(role) {
+    switch (role) {
       case 'admin': return '#c084fc';
       case 'teacher': return '#7dd3fc';
       case 'parent': return '#f472b6';
@@ -100,9 +100,9 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1.5rem' }}>
-        <button 
+        <button
           onClick={() => setIsOpen(true)}
-          className="btn-premium" 
+          className="btn-premium"
           style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.65rem 1.25rem' }}
         >
           <UserPlus style={{ width: '18px', height: '18px' }} /> Create Teacher Account
@@ -137,7 +137,7 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
             border: '1px solid rgba(255, 255, 255, 0.1)',
             boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
           }}>
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               style={{
                 position: 'absolute',
@@ -186,39 +186,39 @@ export default function UsersClient({ initialUsers }: UsersClientProps) {
 
             <form ref={formRef} action={formAction} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div className="grid-2">
-                <FormField 
-                  label="First Name" 
-                  type="text" 
-                  id="firstName" 
-                  name="firstName" 
-                  required 
-                  placeholder="Ms. Barbara" 
+                <FormField
+                  label="First Name"
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  required
+                  placeholder="Ms. Barbara"
                 />
-                <FormField 
-                  label="Last Name" 
-                  type="text" 
-                  id="lastName" 
-                  name="lastName" 
-                  required 
-                  placeholder="Smith" 
+                <FormField
+                  label="Last Name"
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  required
+                  placeholder="Smith"
                 />
               </div>
 
-              <FormField 
-                label="Email Address" 
-                type="email" 
-                id="email" 
-                name="email" 
-                required 
-                placeholder="barbara@tiptopacademy.com" 
+              <FormField
+                label="Email Address"
+                type="email"
+                id="email"
+                name="email"
+                required
+                placeholder="barbara@tiptopacademy.com"
               />
 
-              <FormField 
-                label="Phone Number (Optional)" 
-                type="text" 
-                id="phoneNumber" 
-                name="phoneNumber" 
-                placeholder="+234..." 
+              <FormField
+                label="Phone Number (Optional)"
+                type="text"
+                id="phoneNumber"
+                name="phoneNumber"
+                placeholder="+234..."
               />
 
               <SubmitButton variant="premium" style={{ marginTop: '0.5rem', width: '100%' }}>

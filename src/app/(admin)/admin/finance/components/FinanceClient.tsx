@@ -18,18 +18,18 @@ interface FinanceClientProps {
 }
 
 export default function FinanceClient({ initialPayments }: FinanceClientProps) {
-  
+
   const getStatusBadgeColor = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'success': return 'rgba(34, 197, 94, 0.2)'; // green
       case 'pending': return 'rgba(245, 158, 11, 0.2)'; // amber
       case 'failed': return 'rgba(239, 68, 68, 0.2)'; // red
       default: return 'rgba(255, 255, 255, 0.1)';
     }
   };
-  
+
   const getStatusTextColor = (status: string) => {
-    switch(status) {
+    switch (status) {
       case 'success': return '#4ade80';
       case 'pending': return '#fbbf24';
       case 'failed': return '#f87171';

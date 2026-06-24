@@ -13,6 +13,7 @@ function LoginForm() {
   const oauthError = searchParams.get('error');
 
   const [state, formAction] = useActionState(login, null);
+  const expired = searchParams.get('reason') === 'expired';
 
   const errorMessage = (state && !state.success ? state.error : null) || oauthError;
 
@@ -38,6 +39,21 @@ function LoginForm() {
           <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1.5rem', fontFamily: 'var(--font-display)' }}>
             Welcome Back
           </h2>
+
+          {expired && !errorMessage && (
+            <div style={{
+              background: 'rgba(245, 158, 11, 0.1)',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              color: '#fde047',
+              padding: '0.75rem 1rem',
+              borderRadius: 'var(--radius-md)',
+              fontSize: '0.875rem',
+              marginBottom: '1.25rem',
+              fontWeight: 500
+            }}>
+              Your session has expired due to inactivity. Please log in again.
+            </div>
+          )}
 
           {errorMessage && (
             <div style={{

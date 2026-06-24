@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import SessionTimeout from "@/components/auth/SessionTimeout";
 
 export const metadata: Metadata = {
   title: "Tiptop Academy | Premium Virtual Academy for Ages 3-17",
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
     title: "Tiptop Academy | Hybrid Live Virtual Academy for Kids",
     description: "Child-optimized classrooms, structured courses, and absolute security. Build your child's future today.",
     type: "website",
+    url: "https://tiptop-virtual-academy.vercel.app",
   }
 };
 
@@ -28,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <SessionTimeout />
         {children}
       </body>
     </html>
