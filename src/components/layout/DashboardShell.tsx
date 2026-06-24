@@ -3,7 +3,7 @@ import Sidebar from './Sidebar';
 
 interface DashboardShellProps {
   children: React.ReactNode;
-  role: 'admin' | 'parent' | 'student' | 'teacher';
+  role: 'admin' | 'parent' | 'student' | 'teacher' | 'head_of_school';
 }
 
 export default function DashboardShell({ children, role }: DashboardShellProps) {

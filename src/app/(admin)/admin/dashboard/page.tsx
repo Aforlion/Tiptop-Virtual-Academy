@@ -20,8 +20,23 @@ export default async function AdminDashboardPage() {
   let liveSessions: LiveSessionWithCourse[] = []
   let parentsCount = 0
   let schemaError = false
+  let firstName = 'Barbara'
+  let role = 'admin'
 
   try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('first_name, role')
+        .eq('id', user.id)
+        .single()
+      if (profile) {
+        firstName = profile.first_name
+        role = profile.role
+      }
+    }
+
     const { data: coursesData, error: coursesErr } = await getAllCourses()
     const { data: sessionsData, error: sessionsErr } = await getAllLiveSessions()
     
@@ -86,15 +101,17 @@ export default async function AdminDashboardPage() {
     parentsCount = 2 // Demo fallback
   }
 
+  const displayRole = role === 'head_of_school' ? 'Head of School' : 'Administrator'
+
   return (
     <>
       {/* Header section */}
       <PageHeader 
-        title="Barbara's Command Center" 
+        title={`${firstName}'s Command Center`} 
         subtitle="Manage curriculum, schedule live classes, and audit active operations."
         action={
           <span className="badge badge-purple" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
-            System Role: Administrator
+            System Role: {displayRole}
           </span>
         }
       />

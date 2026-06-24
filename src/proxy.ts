@@ -60,7 +60,7 @@ export async function proxy(request: NextRequest) {
 
   // If user is logged in and on auth/root pages, redirect to their dashboard
   if (path === '/' || path === '/login' || path === '/signup') {
-    if (role === 'admin') {
+    if (role === 'admin' || role === 'head_of_school') {
       url.pathname = '/admin/dashboard'
     } else if (role === 'teacher') {
       url.pathname = '/teacher/dashboard'
@@ -76,13 +76,14 @@ export async function proxy(request: NextRequest) {
   // to their own dashboard, NOT to a 403, to avoid leaking route existence.
   const roleDashboard: Record<string, string> = {
     admin: '/admin/dashboard',
+    head_of_school: '/admin/dashboard',
     teacher: '/teacher/dashboard',
     student: '/student/dashboard',
     parent: '/parent/dashboard',
   }
   const myDashboard = roleDashboard[role] ?? '/parent/dashboard'
 
-  if (path.startsWith('/admin') && role !== 'admin') {
+  if (path.startsWith('/admin') && role !== 'admin' && role !== 'head_of_school') {
     url.pathname = myDashboard
     return NextResponse.redirect(url)
   }

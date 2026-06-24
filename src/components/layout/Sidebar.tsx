@@ -22,13 +22,45 @@ import {
 import { signout } from '@/app/auth/actions';
 
 interface SidebarProps {
-  role: 'admin' | 'parent' | 'student' | 'teacher';
+  role: 'admin' | 'parent' | 'student' | 'teacher' | 'head_of_school';
 }
 
 export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname();
 
   const menuItems = {
+    head_of_school: [
+      {
+        label: 'Command Center',
+        href: '/admin/dashboard',
+        icon: LayoutDashboard,
+      },
+      {
+        label: 'Manage Users',
+        href: '/admin/users',
+        icon: Users,
+      },
+      {
+        label: 'Manage Courses',
+        href: '/admin/courses',
+        icon: BookOpen,
+      },
+      {
+        label: 'Manage Sessions',
+        href: '/admin/sessions',
+        icon: MonitorPlay,
+      },
+      {
+        label: 'Community Hub',
+        href: '/admin/community',
+        icon: Hash,
+      },
+      {
+        label: 'Certificates',
+        href: '/admin/certificates',
+        icon: ScrollText,
+      },
+    ],
     admin: [
       {
         label: 'Command Center',
