@@ -30,7 +30,7 @@ function LoginForm() {
             filter: 'drop-shadow(0 0 10px hsla(var(--accent-purple), 0.3))' 
           }} />
           <h1 className="auth-title">Tiptop Academy</h1>
-          <p className="auth-subtitle">Elevating early education for ages 3 to 12</p>
+          <p className="auth-subtitle">Elevating early education for ages 3 to 17</p>
         </div>
 
         {/* Auth Glass Card */}

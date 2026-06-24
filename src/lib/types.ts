@@ -1,4 +1,4 @@
-export type UserRole = 'parent' | 'student' | 'teacher' | 'admin';
+export type UserRole = 'parent' | 'student' | 'teacher' | 'admin' | 'head_of_school';
 export type SessionType = 'cohort' | 'flexible';
 export type SessionStatus = 'scheduled' | 'live' | 'completed' | 'cancelled';
 
@@ -30,6 +30,8 @@ export interface Course {
   min_age: number;
   max_age: number;
   is_published: boolean;
+  curriculum_type?: 'eyfs' | 'cambridge' | 'custom';
+  key_stage?: string | null;
   created_at: string;
 }
 

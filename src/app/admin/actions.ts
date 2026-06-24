@@ -33,6 +33,8 @@ export async function createCourse(prevState: unknown, formData: FormData): Prom
   const description = formData.get('description') as string
   const minAge = parseInt(formData.get('minAge') as string)
   const maxAge = parseInt(formData.get('maxAge') as string)
+  const curriculumType = formData.get('curriculumType') as string
+  const keyStage = formData.get('keyStage') as string
 
   if (!title || isNaN(minAge) || isNaN(maxAge)) {
     return { success: false, error: 'Title and ages are required.' }
@@ -50,7 +52,9 @@ export async function createCourse(prevState: unknown, formData: FormData): Prom
       title,
       description: description || null,
       min_age: minAge,
-      max_age: maxAge
+      max_age: maxAge,
+      curriculum_type: curriculumType || 'custom',
+      key_stage: keyStage || null
     })
 
   if (error) {

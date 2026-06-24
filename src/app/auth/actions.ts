@@ -27,8 +27,10 @@ export async function login(prevState: unknown, formData: FormData): Promise<Act
   const role = data.user?.user_metadata?.role || 'parent'
   
   let targetPath = '/parent/dashboard';
-  if (role === 'admin') {
+  if (role === 'admin' || role === 'head_of_school') {
     targetPath = '/admin/dashboard';
+  } else if (role === 'teacher') {
+    targetPath = '/teacher/dashboard';
   } else if (role === 'student') {
     targetPath = '/student/dashboard';
   }

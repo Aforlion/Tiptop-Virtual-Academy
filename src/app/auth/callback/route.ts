@@ -13,8 +13,10 @@ export async function GET(request: Request) {
       const role = user.user_metadata?.role || 'parent'
       
       let redirectUrl = '/parent/dashboard'
-      if (role === 'admin') {
+      if (role === 'admin' || role === 'head_of_school') {
         redirectUrl = '/admin/dashboard'
+      } else if (role === 'teacher') {
+        redirectUrl = '/teacher/dashboard'
       } else if (role === 'student') {
         redirectUrl = '/student/dashboard'
       }

@@ -54,6 +54,29 @@ export default function CreateCourseForm() {
           placeholder="Provide a brief outline of curriculum content and goals..." 
         />
 
+        <div className="grid-2" style={{ gap: '1rem' }}>
+          <FormField
+            label="Curriculum Type"
+            id="curriculumType"
+            name="curriculumType"
+            required
+            as="select"
+            options={[
+              { value: 'custom', label: 'Custom/Internal' },
+              { value: 'eyfs', label: 'EYFS (Early Years)' },
+              { value: 'cambridge', label: 'Cambridge Curriculum' }
+            ]}
+            defaultValue="custom"
+          />
+          <FormField
+            label="Key Stage / Stage"
+            type="text"
+            id="keyStage"
+            name="keyStage"
+            placeholder="e.g. Stage 1, Early Years, KS3"
+          />
+        </div>
+
         <div className="grid-2">
           <FormField 
             label="Minimum Age" 
@@ -61,7 +84,7 @@ export default function CreateCourseForm() {
             id="minAge" 
             name="minAge" 
             min="3" 
-            max="12" 
+            max="17" 
             defaultValue="5" 
             required
           />
@@ -71,7 +94,7 @@ export default function CreateCourseForm() {
             id="maxAge" 
             name="maxAge" 
             min="3" 
-            max="12" 
+            max="17" 
             defaultValue="8" 
             required
           />

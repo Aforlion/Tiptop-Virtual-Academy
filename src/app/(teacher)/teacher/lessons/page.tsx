@@ -52,7 +52,6 @@ export default async function TeacherLessonsPage() {
   const { data: courses, error: coursesErr } = await supabase
     .from('courses')
     .select('id, title')
-    .eq('is_published', true)
     .order('title', { ascending: true });
 
   if (coursesErr) {

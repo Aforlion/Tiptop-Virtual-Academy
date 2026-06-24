@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Tiptop Academy | Premium Virtual Academy for Kids 3-12",
-  description: "An online learning academy specialized for learners aged 3 to 12. Hybrid interactive cohorts and flexible live classroom learning built for parent control and student excitement.",
-  keywords: ["online academy", "kids learning", "virtual learning", "3-12 years", "flex classrooms", "stem for kids"],
+  title: "Tiptop Academy | Premium Virtual Academy for Ages 3-17",
+  description: "An online learning academy specialized for learners aged 3 to 17. Hybrid interactive cohorts and flexible live classroom learning built for parent control and student excitement.",
+  keywords: ["online academy", "kids learning", "virtual learning", "3-17 years", "flex classrooms", "stem for kids"],
   authors: [{ name: "Barbara" }],
   openGraph: {
     title: "Tiptop Academy | Hybrid Live Virtual Academy for Kids",

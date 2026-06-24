@@ -50,7 +50,7 @@ export default function AddChildForm() {
           <label className="form-label" htmlFor="dob">Date of Birth</label>
           <input required className="form-input" type="date" id="dob" name="dob" />
           <span style={{ fontSize: '0.75rem', color: 'hsl(var(--text-muted))', marginTop: '0.25rem' }}>
-            Used to auto-adapt the dashboard layout (Playful 3-6 vs. Advanced 7-12 theme).
+            Used to auto-adapt the dashboard layout (Playful 3-6, Advanced 7-12, or Teen 13-17 theme).
           </span>
         </div>
 
