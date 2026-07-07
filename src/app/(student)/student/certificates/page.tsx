@@ -99,38 +99,10 @@ export default async function StudentCertificatesPage({ searchParams }: PageProp
     }
   }
 
-  // Seed mock certificates if in demo mode or no real ones earned yet
-  if (isDemo || earnedCertificates.length === 0) {
-    earnedCertificates = [
-      {
-        id: 'cert-demo-1',
-        course_id: 'c1',
-        title_text: 'Certificate of Achievement',
-        body_text: 'This certifies that {student_name} has successfully completed the curriculum for Creative Coding Foundations.',
-        signatory_name: 'Barbara Johnson',
-        signatory_title: 'Academy Director',
-        accent_color: '#7c3aed',
-        course_title: 'Creative Coding Foundations',
-        course_description: 'Introduction to JavaScript programming, logic loops, and interactive art.'
-      },
-      {
-        id: 'cert-demo-2',
-        course_id: 'c2',
-        title_text: 'Honorary Graduate',
-        body_text: 'This certifies that {student_name} has successfully navigated the challenges of Cosmic Astrophysics for Tiny Minds.',
-        signatory_name: 'Dr. Sarah Patel',
-        signatory_title: 'Lead Astrophysicist',
-        accent_color: '#06b6d4',
-        course_title: 'Cosmic Astrophysics for Tiny Minds',
-        course_description: 'An introductory tour of our solar system, gravity, and cosmic anomalies.'
-      }
-    ];
-  }
-
   return (
     <>
       <PageHeader
-        title={`${studentName}'s Certificates`}
+        title={studentName ? `${studentName}'s Certificates` : 'Certificates'}
         subtitle="View and print earned course completion certificates."
         action={
           <Link
@@ -143,49 +115,45 @@ export default async function StudentCertificatesPage({ searchParams }: PageProp
         }
       />
 
-      {isDemo && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '0.75rem',
-          padding: '1rem', borderRadius: 'var(--radius-lg)',
-          background: 'rgba(217, 119, 6, 0.1)', border: '1px solid rgba(217, 119, 6, 0.2)',
-          color: '#f59e0b', marginBottom: '2rem', fontSize: '0.9rem'
-        }}>
-          <ShieldAlert style={{ width: '20px', height: '20px', flexShrink: 0 }} />
-          <div>
-            <strong>Demo View:</strong> You are viewing sample completion certificates. Earn official certificates by booking, attending classes, and completing course pathways.
-          </div>
+      {earnedCertificates.length === 0 ? (
+        <div className="glass-card" style={{ padding: '4rem', textAlign: 'center' }}>
+          <Award style={{ width: '48px', height: '48px', color: 'hsl(var(--text-muted))', margin: '0 auto 1.5rem auto' }} />
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>No Certificates Earned Yet</h3>
+          <p style={{ color: 'hsl(var(--text-secondary))', maxWidth: '400px', margin: '0 auto' }}>
+            Official certificates will appear here once you complete all class sessions and quizzes in a course pathway.
+          </p>
+        </div>
+      ) : (
+        <div className="grid-2">
+          {earnedCertificates.map(cert => (
+            <div key={cert.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'between', gap: '1.5rem', borderLeft: `6px solid ${cert.accent_color}` }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                  <span className="badge" style={{ background: `${cert.accent_color}18`, color: cert.accent_color, border: `1px solid ${cert.accent_color}33` }}>
+                    Completed
+                  </span>
+                  <Award style={{ width: '24px', height: '24px', color: cert.accent_color }} />
+                </div>
+                <h3 style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>{cert.course_title}</h3>
+                <p style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                  {cert.course_description || 'No description available.'}
+                </p>
+              </div>
+              
+              <div style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem' }}>
+                <Link
+                  href={`/student/certificates/${cert.course_id}?studentId=${resolvedStudentId}`}
+                  className="btn-premium"
+                  style={{ flex: 1, textShadow: 'none', background: cert.accent_color, boxShadow: `0 4px 14px ${cert.accent_color}44` }}
+                >
+                  <Download style={{ width: '16px', height: '16px' }} />
+                  View &amp; Print
+                </Link>
+              </div>
+            </div>
+          ))}
         </div>
       )}
-
-      <div className="grid-2">
-        {earnedCertificates.map(cert => (
-          <div key={cert.id} className="glass-card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'between', gap: '1.5rem', borderLeft: `6px solid ${cert.accent_color}` }}>
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                <span className="badge" style={{ background: `${cert.accent_color}18`, color: cert.accent_color, border: `1px solid ${cert.accent_color}33` }}>
-                  Completed
-                </span>
-                <Award style={{ width: '24px', height: '24px', color: cert.accent_color }} />
-              </div>
-              <h3 style={{ marginTop: '1rem', marginBottom: '0.5rem' }}>{cert.course_title}</h3>
-              <p style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.9rem', marginBottom: '1rem' }}>
-                {cert.course_description || 'No description available.'}
-              </p>
-            </div>
-            
-            <div style={{ marginTop: 'auto', display: 'flex', gap: '0.75rem' }}>
-              <Link
-                href={`/student/certificates/${cert.course_id}?studentId=${resolvedStudentId || 'demo'}`}
-                className="btn-premium"
-                style={{ flex: 1, textShadow: 'none', background: cert.accent_color, boxShadow: `0 4px 14px ${cert.accent_color}44` }}
-              >
-                <Download style={{ width: '16px', height: '16px' }} />
-                View &amp; Print
-              </Link>
-            </div>
-          </div>
-        ))}
-      </div>
     </>
   );
 }

@@ -1,6 +1,7 @@
 import React from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import PageHeader from '@/components/layout/PageHeader';
 import { getStudentsByParent } from '@/lib/queries';
 import { Student, AssessmentSubmission } from '@/lib/types';
@@ -28,7 +29,7 @@ export default async function ParentReportsPage({ searchParams }: PageProps) {
   const student = safeStudents.find(s => s.id === activeStudentId) || safeStudents[0];
 
   let submissions: any[] = [];
-  let isDemo = true;
+  const isDemo = false;
 
   if (student) {
     // Load assessment submissions for this student
@@ -46,56 +47,11 @@ export default async function ParentReportsPage({ searchParams }: PageProps) {
 
     if (subData && subData.length > 0) {
       submissions = subData;
-      isDemo = false;
     }
   }
 
-  // Seeding mock submissions for demo view
-  if (isDemo) {
-    submissions = [
-      {
-        id: 'sub-mock-1',
-        score: 40,
-        percentage: 80.00,
-        correct_count: 3,
-        incorrect_count: 1,
-        skipped_count: 0,
-        time_spent_secs: 240,
-        created_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
-        assessments: {
-          title: 'Logic & Loop Championship Quiz',
-          description: 'Test your logic loop power! Tackle MCQs, fill-in puzzles, and a reading comprehension challenge.'
-        },
-        responses: [
-          { question_id: 'q-1', user_answer: 'For Loop', is_correct: true, question_text: 'Which loop structure is designed to repeat a block of code a set number of times?', question_type: 'mcq_single', difficulty: 'easy', points: 10 },
-          { question_id: 'q-2', user_answer: ['break', 'continue'], is_correct: true, question_text: 'Identify all keywords commonly used in loops to alter their standard path:', question_type: 'mcq_multiple', difficulty: 'medium', points: 15 },
-          { question_id: 'q-3', user_answer: 'false', is_correct: false, question_text: 'An infinite loop runs forever because its conditional check always resolves to _____.', question_type: 'fill_in', difficulty: 'medium', points: 15, correct_answer: 'true' },
-          { question_id: 'q-4', user_answer: 'Because it followed the recursive path back to orbit', is_correct: true, question_text: 'According to the passage, why was ADA-1 able to recover the lost space capsule?', question_type: 'reading', difficulty: 'hard', points: 20 }
-        ]
-      },
-      {
-        id: 'sub-mock-2',
-        score: 10,
-        percentage: 50.00,
-        correct_count: 1,
-        incorrect_count: 1,
-        skipped_count: 0,
-        time_spent_secs: 180,
-        created_at: new Date(Date.now() - 5 * 24 * 3600 * 1000).toISOString(),
-        assessments: {
-          title: 'Introductory Loops Quiz',
-          description: 'Basic understanding of code repetitions.'
-        },
-        responses: [
-          { question_id: 'q-1', user_answer: 'For Loop', is_correct: true, question_text: 'Which loop structure is designed to repeat a block of code a set number of times?', question_type: 'mcq_single', difficulty: 'easy', points: 10 },
-          { question_id: 'q-3', user_answer: 'never', is_correct: false, question_text: 'An infinite loop runs forever because its conditional check always resolves to _____.', question_type: 'fill_in', difficulty: 'medium', points: 15, correct_answer: 'true' }
-        ]
-      }
-    ];
-  }
-
   // Since DB responses only store IDs, let's load question details for real submissions
-  if (!isDemo && submissions.length > 0) {
+  if (submissions.length > 0) {
     const enrichedSubmissions = [];
     for (const sub of submissions) {
       const qIds = sub.responses.map((r: any) => r.question_id);
@@ -136,12 +92,22 @@ export default async function ParentReportsPage({ searchParams }: PageProps) {
         subtitle="Track your child's quiz performance, correct ratio details, and session analytics."
       />
 
-      <ParentReportsClient
-        students={safeStudents}
-        activeStudent={student || { id: 'mock-child-id', first_name: 'Aiden' }}
-        submissions={submissions}
-        isDemo={isDemo}
-      />
+      {safeStudents.length === 0 ? (
+        <div className="glass-card" style={{ padding: '4rem', textAlign: 'center' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginBottom: '0.5rem' }}>No Registered Children Found</h3>
+          <p style={{ color: 'hsl(var(--text-secondary))', maxWidth: '400px', margin: '0 auto 1.5rem auto' }}>
+            Please register your child first to access learning progress reports and metrics.
+          </p>
+          <Link href="/parent/dashboard" className="btn-premium">Register Student</Link>
+        </div>
+      ) : (
+        <ParentReportsClient
+          students={safeStudents}
+          activeStudent={student}
+          submissions={submissions}
+          isDemo={isDemo}
+        />
+      )}
     </>
   );
 }

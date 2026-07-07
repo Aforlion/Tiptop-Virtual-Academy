@@ -8,9 +8,8 @@ import {
 } from '@/lib/queries'
 import { calculateAge, getAgeBracket, getMockDateOffset } from '@/lib/utils'
 import Link from 'next/link'
-import { ArrowLeft, LogOut } from 'lucide-react'
+import { ArrowLeft, LogOut, GraduationCap } from 'lucide-react'
 import { signout } from '@/app/auth/actions'
-import AgeSwitcher from '../components/AgeSwitcher'
 import WelcomeHero from '../components/WelcomeHero'
 import ClassroomSection from '../components/ClassroomSection'
 import SchedulePanel from '../components/SchedulePanel'
@@ -61,69 +60,25 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
     console.error('Failed to fetch student gamification details:', err)
   }
 
-  // Fallback default student if none provided in search param (for direct link testing)
   if (!student) {
-    student = {
-      id: 'mock-child-id',
-      parent_id: 'parent-mock-1',
-      first_name: 'Aiden',
-      date_of_birth: manualAgeToggle === 'older' ? '2015-05-15' : '2021-08-14',
-      notes: 'Loves stars and simple puzzles.',
-      xp: 240,
-      created_at: ''
-    }
-  }
-
-  // Fallback gamification details for demonstration / testing
-  if (challengesData.length === 0) {
-    challengesData = [
-      { id: 'c1', title: 'Class Explorer', description: 'Attend 3 live learning sessions', xp_reward: 300, target_count: 3, progress_count: 1, completed: false },
-      { id: 'c2', title: 'Logic Wizard', description: 'Earn the Logic Wizard badge (🧠) for writing bug-free loops', xp_reward: 150, target_count: 1, progress_count: 0, completed: false },
-      { id: 'c3', title: 'Science Explorer', description: 'Earn the Space Explorer badge (🚀) for stellar calculations', xp_reward: 150, target_count: 1, progress_count: 0, completed: false },
-      { id: 'c4', title: 'Dino Hunter', description: 'Earn the Dino Discovery badge (🦖) for digging up history secrets', xp_reward: 150, target_count: 1, progress_count: 0, completed: false }
-    ]
-  }
-
-  if (leaderboardData.allTime.length === 0) {
-    leaderboardData = {
-      allTime: [
-        { rank: 1, student_id: 's-1', first_name: 'Tiana', total_xp: 3200, weekly_xp: 600, league_tier: 'Gold', is_current_student: false },
-        { rank: 2, student_id: student.id, first_name: student.first_name, total_xp: student.xp || 240, weekly_xp: 100, league_tier: 'Bronze', is_current_student: true },
-        { rank: 3, student_id: 's-3', first_name: 'Mateo', total_xp: 150, weekly_xp: 150, league_tier: 'Bronze', is_current_student: false }
-      ],
-      weekly: [
-        { rank: 1, student_id: 's-1', first_name: 'Tiana', total_xp: 3200, weekly_xp: 600, league_tier: 'Gold', is_current_student: false },
-        { rank: 2, student_id: 's-3', first_name: 'Mateo', total_xp: 150, weekly_xp: 150, league_tier: 'Bronze', is_current_student: false },
-        { rank: 3, student_id: student.id, first_name: student.first_name, total_xp: student.xp || 240, weekly_xp: 100, league_tier: 'Bronze', is_current_student: true }
-      ]
-    }
-  }
-
-  if (streakData.lastSevenDays.length === 0) {
-    streakData = {
-      currentStreak: 2,
-      lastSevenDays: [
-        { dayName: 'Sat', dateString: '2026-05-30', active: false },
-        { dayName: 'Sun', dateString: '2026-05-31', active: false },
-        { dayName: 'Mon', dateString: '2026-06-01', active: false },
-        { dayName: 'Tue', dateString: '2026-06-02', active: false },
-        { dayName: 'Wed', dateString: '2026-06-03', active: true },
-        { dayName: 'Thu', dateString: '2026-06-04', active: true },
-        { dayName: 'Fri', dateString: '2026-06-05', active: false }
-      ]
-    }
+    return (
+      <main className="auth-wrapper" style={{ background: 'hsl(var(--bg-primary))', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="glass-card" style={{ maxWidth: '480px', padding: '2.5rem', textAlign: 'center', border: '1px solid var(--glass-border)' }}>
+          <GraduationCap style={{ width: '48px', height: '48px', color: 'hsl(var(--accent-purple))', margin: '0 auto 1.25rem auto' }} />
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#fff', marginBottom: '1rem', fontFamily: 'var(--font-display)' }}>Profile Access Restricted</h2>
+          <p style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '2rem' }}>
+            No registered student profile was found or associated with this session. Please select a child profile from the parent center catalog dashboard.
+          </p>
+          <Link href="/login" className="btn-premium" style={{ display: 'inline-flex', padding: '0.75rem 2rem', fontSize: '0.9rem' }}>
+            Return to Login
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   // Calculate age for age-adaptation (Rule 3)
-  let age = calculateAge(student.date_of_birth)
-  if (manualAgeToggle === 'teen') {
-    age = 14 // force 13-16 teen layout
-  } else if (manualAgeToggle === 'older') {
-    age = 9 // force 7-12 senior layout
-  } else if (manualAgeToggle === 'younger') {
-    age = 4 // force 3-6 junior layout
-  }
-
+  const age = calculateAge(student.date_of_birth)
   const ageBracket = getAgeBracket(age)
   const isJunior = ageBracket === 'junior'
   const isTeen = ageBracket === 'teen'
@@ -135,42 +90,6 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
     activeThemeClass = 'teen-theme'
   }
 
-  // Fallback booked sessions for demonstration
-  if (bookings.length === 0) {
-    bookings = [
-      {
-        id: 'booking-mock-1',
-        student_id: student.id,
-        session_id: 'session-mock-1',
-        attended: false,
-        earned_badges: [],
-        created_at: '',
-        students: student,
-        live_sessions: {
-          id: 'session-mock-1',
-          course_id: 'c-mock',
-          teacher_name: 'Ms. Barbara',
-          meeting_token: 'room-astro',
-          scheduled_start: getMockDateOffset(5), // starts in 5 minutes!
-          scheduled_end: getMockDateOffset(65),
-          session_type: 'flexible',
-          max_seats: 15,
-          status: 'scheduled',
-          created_at: '',
-          courses: {
-            id: 'c-mock',
-            title: isJunior ? 'Creative Coding & Logic Loops' : isTeen ? 'Advanced Web Architecture & Systems' : 'Cosmic Astrophysics for Tiny Minds',
-            description: isJunior ? 'Learn code using playful color loops and puzzles!' : isTeen ? 'Master state machines, database ledgers, and API design.' : 'Explore stars, gravity, and the quantum cosmos.',
-            min_age: isJunior ? 3 : isTeen ? 13 : 7,
-            max_age: isJunior ? 6 : isTeen ? 16 : 12,
-            is_published: true,
-            created_at: ''
-          }
-        }
-      }
-    ]
-  }
-
   const activeBooking = bookings[0]
   const portalTitle = isJunior ? 'Junior Academy Dashboard' : isTeen ? 'Teen Workspace Terminal' : 'Nexus Learner Terminal'
 
@@ -179,9 +98,6 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
 
   return (
     <div className={activeThemeClass} style={{ transition: 'all 0.5s ease' }}>
-      
-      {/* Dev Switcher */}
-      <AgeSwitcher studentId={studentId || 'demo'} ageBracket={ageBracket} />
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
         

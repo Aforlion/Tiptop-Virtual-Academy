@@ -495,6 +495,11 @@ export default function Home() {
               </div>
             </div>
           </div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginTop: '3rem' }}>
+            <Link href="/curriculum" className="btn-premium" style={{ padding: '0.85rem 2rem', fontSize: '0.95rem' }}>
+              View Detailed 12-Week Curriculum Maps <ChevronRight style={{ width: '18px', height: '18px' }} />
+            </Link>
+          </div>
         </div>
       </section>
 
