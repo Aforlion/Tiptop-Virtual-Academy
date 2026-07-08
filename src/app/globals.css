@@ -817,3 +817,43 @@ a {
   animation: none;
 }
 
+/* Responsive Public Header Navigation Utilities */
+.nav-desktop-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: hsl(var(--text-secondary));
+}
+
+.nav-desktop-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-mobile-toggle {
+  display: none !important;
+}
+
+.brand-text-desktop {
+  display: inline;
+}
+
+@media (max-width: 768px) {
+  .nav-desktop-links {
+    display: none !important;
+  }
+  .nav-desktop-actions {
+    display: none !important;
+  }
+  .nav-mobile-toggle {
+    display: flex !important;
+  }
+  .brand-text-desktop {
+    display: none !important;
+  }
+}
+
+

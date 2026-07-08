@@ -93,7 +93,7 @@ export default function CurriculumPage() {
               background: 'linear-gradient(135deg, hsl(var(--accent-purple)), hsl(var(--accent-pink)))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
-            }} className="hidden xs:inline">
+            }} className="brand-text-desktop">
               Tiptop Academy
             </span>
           </Link>

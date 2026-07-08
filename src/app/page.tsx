@@ -131,19 +131,19 @@ export default function Home() {
               background: 'linear-gradient(135deg, hsl(var(--accent-purple)), hsl(var(--accent-pink)))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
-            }} className="hidden xs:inline">
+            }} className="brand-text-desktop">
               Tiptop Academy
             </span>
           </Link>
           
-          <nav className="hidden md:flex" style={{ display: 'flex', alignItems: 'center', gap: '2rem', fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--text-secondary))' }}>
+          <nav className="nav-desktop-links" style={{ display: 'flex', alignItems: 'center', gap: '2rem', fontSize: '0.875rem', fontWeight: 500, color: 'hsl(var(--text-secondary))' }}>
             <a href="#about" style={{ transition: 'var(--transition-fast)' }} className="hover-white">About</a>
             <a href="#curriculum" style={{ transition: 'var(--transition-fast)' }} className="hover-white">Curriculum</a>
             <a href="#process" style={{ transition: 'var(--transition-fast)' }} className="hover-white">Registration</a>
             <a href="#structure" style={{ transition: 'var(--transition-fast)' }} className="hover-white">Class Structure</a>
           </nav>
 
-          <div className="hidden md:flex" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="nav-desktop-actions" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <Link href="/login" className="btn-secondary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.875rem' }}>
               Sign In
             </Link>
@@ -155,7 +155,7 @@ export default function Home() {
           {/* Hamburger menu for mobile */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="flex md:hidden btn-secondary"
+            className="nav-mobile-toggle btn-secondary"
             style={{ 
               padding: '0.5rem', 
               borderRadius: 'var(--radius-sm)', 
