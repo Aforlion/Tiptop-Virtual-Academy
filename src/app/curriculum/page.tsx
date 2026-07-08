@@ -67,8 +67,8 @@ export default function CurriculumPage() {
           height: '80px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'between'
-        }} className="flex-between">
+          justifyContent: 'space-between'
+        }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
               position: 'relative',
@@ -76,7 +76,8 @@ export default function CurriculumPage() {
               height: '40px',
               borderRadius: 'var(--radius-sm)',
               overflow: 'hidden',
-              border: '1px solid var(--glass-border)'
+              border: '1px solid var(--glass-border)',
+              flexShrink: 0
             }}>
               <Image 
                 src="/logo.jpg" 
@@ -92,7 +93,7 @@ export default function CurriculumPage() {
               background: 'linear-gradient(135deg, hsl(var(--accent-purple)), hsl(var(--accent-pink)))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
-            }}>
+            }} className="hidden xs:inline">
               Tiptop Academy
             </span>
           </Link>

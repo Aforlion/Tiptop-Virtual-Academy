@@ -22,11 +22,14 @@ import {
   Layers,
   Sparkle,
   Heart,
-  Smile
+  Smile,
+  Menu,
+  X
 } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'early' | 'primary'>('early');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const registrationSteps = [
     {
@@ -102,8 +105,8 @@ export default function Home() {
           height: '80px',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'between'
-        }} className="flex-between">
+          justifyContent: 'space-between'
+        }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{
               position: 'relative',
@@ -111,7 +114,8 @@ export default function Home() {
               height: '40px',
               borderRadius: 'var(--radius-sm)',
               overflow: 'hidden',
-              border: '1px solid var(--glass-border)'
+              border: '1px solid var(--glass-border)',
+              flexShrink: 0
             }}>
               <Image 
                 src="/logo.jpg" 
@@ -127,7 +131,7 @@ export default function Home() {
               background: 'linear-gradient(135deg, hsl(var(--accent-purple)), hsl(var(--accent-pink)))',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent'
-            }}>
+            }} className="hidden xs:inline">
               Tiptop Academy
             </span>
           </Link>
@@ -139,7 +143,7 @@ export default function Home() {
             <a href="#structure" style={{ transition: 'var(--transition-fast)' }} className="hover-white">Class Structure</a>
           </nav>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div className="hidden md:flex" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <Link href="/login" className="btn-secondary" style={{ padding: '0.5rem 1.25rem', fontSize: '0.875rem' }}>
               Sign In
             </Link>
@@ -147,7 +151,58 @@ export default function Home() {
               Get Started
             </Link>
           </div>
+
+          {/* Hamburger menu for mobile */}
+          <button
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            className="flex md:hidden btn-secondary"
+            style={{ 
+              padding: '0.5rem', 
+              borderRadius: 'var(--radius-sm)', 
+              borderColor: 'var(--glass-border)',
+              background: 'rgba(255,255,255,0.02)',
+              cursor: 'pointer'
+            }}
+            aria-label="Toggle Menu"
+          >
+            {isMobileMenuOpen ? <X style={{ width: '20px', height: '20px', color: '#fff' }} /> : <Menu style={{ width: '20px', height: '20px', color: '#fff' }} />}
+          </button>
         </div>
+
+        {/* Mobile menu dropdown */}
+        {isMobileMenuOpen && (
+          <div 
+            className="flex md:hidden"
+            style={{
+              position: 'absolute',
+              top: '80px',
+              left: 0,
+              right: 0,
+              background: 'rgba(13, 13, 18, 0.95)',
+              backdropFilter: 'blur(20px)',
+              WebkitBackdropFilter: 'blur(20px)',
+              borderBottom: '1px solid var(--glass-border)',
+              padding: '1.5rem',
+              flexDirection: 'column',
+              gap: '1.25rem',
+              zIndex: 49
+            }}
+          >
+            <a href="#about" onClick={() => setIsMobileMenuOpen(false)} style={{ fontSize: '1rem', fontWeight: 500, color: 'hsl(var(--text-secondary))' }}>About</a>
+            <a href="#curriculum" onClick={() => setIsMobileMenuOpen(false)} style={{ fontSize: '1rem', fontWeight: 500, color: 'hsl(var(--text-secondary))' }}>Curriculum</a>
+            <a href="#process" onClick={() => setIsMobileMenuOpen(false)} style={{ fontSize: '1rem', fontWeight: 500, color: 'hsl(var(--text-secondary))' }}>Registration</a>
+            <a href="#structure" onClick={() => setIsMobileMenuOpen(false)} style={{ fontSize: '1rem', fontWeight: 500, color: 'hsl(var(--text-secondary))' }}>Class Structure</a>
+            <hr style={{ borderColor: 'var(--glass-border)', margin: '0.25rem 0' }} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="btn-secondary" style={{ width: '100%', justifyContent: 'center' }}>
+                Sign In
+              </Link>
+              <Link href="/signup" onClick={() => setIsMobileMenuOpen(false)} className="btn-premium" style={{ width: '100%', justifyContent: 'center' }}>
+                Get Started
+              </Link>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
