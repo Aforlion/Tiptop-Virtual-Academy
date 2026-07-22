@@ -45,6 +45,10 @@ export interface LiveSession {
   session_type: SessionType;
   max_seats: number;
   status: SessionStatus;
+  google_meet_url?: string | null;
+  sync_status?: string | null;
+  actual_started_at?: string | null;
+  actual_ended_at?: string | null;
   created_at: string;
 }
 

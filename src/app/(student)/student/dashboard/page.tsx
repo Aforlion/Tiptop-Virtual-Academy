@@ -1,63 +1,63 @@
-import React from 'react'
+import React from 'react';
+import { createClient } from '@/lib/supabase/server';
 import { 
   getStudentById, 
   getBookingsByStudent, 
   getStudentChallenges, 
   getLeaderboards, 
   getStudentStreaks 
-} from '@/lib/queries'
-import { calculateAge, getAgeBracket, getMockDateOffset } from '@/lib/utils'
-import Link from 'next/link'
-import { ArrowLeft, LogOut, GraduationCap } from 'lucide-react'
-import { signout } from '@/app/auth/actions'
-import WelcomeHero from '../components/WelcomeHero'
-import ClassroomSection from '../components/ClassroomSection'
-import SchedulePanel from '../components/SchedulePanel'
-import ExplorationPanel from '../components/ExplorationPanel'
-import GamificationCenter from '../components/GamificationCenter'
-import { Student, BookingWithDetails } from '@/lib/types'
+} from '@/lib/queries';
+import { calculateAge, getAgeBracket } from '@/lib/utils';
+import Link from 'next/link';
+import { ArrowLeft, LogOut, GraduationCap, Video, BookOpen, Clock, FileText, Sparkles, Bell, CheckCircle2, Award } from 'lucide-react';
+import { signout } from '@/app/auth/actions';
+import WelcomeHero from '../components/WelcomeHero';
+import ClassroomSection from '../components/ClassroomSection';
+import SchedulePanel from '../components/SchedulePanel';
+import ExplorationPanel from '../components/ExplorationPanel';
+import GamificationCenter from '../components/GamificationCenter';
+import StudentNavHeader from '../components/StudentNavHeader';
+import { Student, BookingWithDetails } from '@/lib/types';
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function StudentDashboardPage({ searchParams }: PageProps) {
-  const params = await searchParams
+  const params = await searchParams;
+  const studentId = params.studentId as string | undefined;
 
-  const studentId = params.studentId as string | undefined
-  const manualAgeToggle = params.testAge as string | undefined
+  let student: Student | null = null;
+  let bookings: BookingWithDetails[] = [];
+  let challengesData: any[] = [];
+  let leaderboardData = { allTime: [] as any[], weekly: [] as any[] };
+  let streakData = { currentStreak: 0, lastSevenDays: [] as any[] };
 
-  let student: Student | null = null
-  let bookings: BookingWithDetails[] = []
-  
-  let challengesData: any[] = []
-  let leaderboardData = { allTime: [] as any[], weekly: [] as any[] }
-  let streakData = { currentStreak: 0, lastSevenDays: [] as any[] }
+  const supabase = await createClient();
 
   try {
     if (studentId && studentId !== 'demo') {
-      const { data: studentData, error: studentErr } = await getStudentById(studentId)
-      const { data: bookingsData, error: bookingsErr } = await getBookingsByStudent(studentId)
+      const { data: studentData, error: studentErr } = await getStudentById(studentId);
+      const { data: bookingsData, error: bookingsErr } = await getBookingsByStudent(studentId);
 
       if (!studentErr && !bookingsErr && studentData) {
-        student = studentData
-        bookings = bookingsData || []
+        student = studentData;
+        bookings = bookingsData || [];
 
-        // Fetch student gamification details
-        const { data: challs } = await getStudentChallenges(student.id)
-        if (challs) challengesData = challs
+        const { data: challs } = await getStudentChallenges(student.id);
+        if (challs) challengesData = challs;
 
-        const { allTime, weekly } = await getLeaderboards(student.id)
-        leaderboardData = { allTime, weekly }
+        const { allTime, weekly } = await getLeaderboards(student.id);
+        leaderboardData = { allTime, weekly };
 
-        const { currentStreak, lastSevenDays } = await getStudentStreaks(student.id)
-        streakData = { currentStreak, lastSevenDays }
+        const { currentStreak, lastSevenDays } = await getStudentStreaks(student.id);
+        streakData = { currentStreak, lastSevenDays };
       }
     }
   } catch (err) {
-    console.error('Failed to fetch student gamification details:', err)
+    console.error('Failed to fetch student dashboard details:', err);
   }
 
   if (!student) {
@@ -77,67 +77,115 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
     );
   }
 
-  // Calculate age for age-adaptation (Rule 3)
-  const age = calculateAge(student.date_of_birth)
-  const ageBracket = getAgeBracket(age)
-  const isJunior = ageBracket === 'junior'
-  const isTeen = ageBracket === 'teen'
+  const age = calculateAge(student.date_of_birth);
+  const ageBracket = getAgeBracket(age);
+  const isJunior = ageBracket === 'junior';
+  const isTeen = ageBracket === 'teen';
 
-  let activeThemeClass = 'older-kid-theme'
+  let activeThemeClass = 'older-kid-theme';
   if (isJunior) {
-    activeThemeClass = 'kid-theme'
+    activeThemeClass = 'kid-theme';
   } else if (isTeen) {
-    activeThemeClass = 'teen-theme'
+    activeThemeClass = 'teen-theme';
   }
 
-  const activeBooking = bookings[0]
-  const portalTitle = isJunior ? 'Junior Academy Dashboard' : isTeen ? 'Teen Workspace Terminal' : 'Nexus Learner Terminal'
+  const activeBooking = bookings[0];
+  const allEarnedBadgeIds = bookings.flatMap(b => b.earned_badges || []);
 
-  // Collect all earned badge IDs
-  const allEarnedBadgeIds = bookings.flatMap(b => b.earned_badges || [])
+  // Fetch pending homework due today
+  const { data: homeworkDue } = await supabase
+    .from('assignments')
+    .select('*, courses(title)')
+    .order('due_date', { ascending: true })
+    .limit(3);
+
+  // Fetch announcements
+  const { data: announcements } = await supabase
+    .from('notifications')
+    .select('*')
+    .or(`profile_id.eq.${student.parent_id}`)
+    .order('created_at', { ascending: false })
+    .limit(2);
 
   return (
     <div className={activeThemeClass} style={{ transition: 'all 0.5s ease' }}>
-
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
         
-        {/* Navigation / Header Row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem' }}>
-          <Link 
-            href="/parent/dashboard" 
-            className="btn-secondary" 
-            style={{
-              borderRadius: isJunior ? '9999px' : 'var(--radius-md)',
-              background: isJunior ? '#fff' : isTeen ? '#111827' : 'rgba(255,255,255,0.02)',
-              borderColor: isJunior ? '#e2e8f0' : isTeen ? '#1f2937' : 'rgba(6, 182, 212, 0.2)',
-              color: isJunior ? '#475569' : '#fff'
-            }}
-          >
-            <ArrowLeft style={{ width: '16px', height: '16px' }} /> Return to Parent Room
-          </Link>
-
-          <h2 style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: isJunior ? '1.5rem' : '1.25rem', color: isJunior ? '#1e1b4b' : isTeen ? '#818cf8' : '#22d3ee' }}>
-            {portalTitle}
-          </h2>
-
-          <form action={signout}>
-            <button 
-              type="submit" 
-              className="btn-secondary" 
-              style={{
-                borderRadius: isJunior ? '9999px' : 'var(--radius-md)',
-                color: '#ef4444',
-                borderColor: isJunior ? '#fca5a5' : isTeen ? '#ef4444' : 'rgba(220, 38, 38, 0.2)',
-                background: isJunior ? '#fff' : isTeen ? 'transparent' : 'transparent'
-              }}
-            >
-              <LogOut style={{ width: '16px', height: '16px' }} /> Leave Academy
-            </button>
-          </form>
-        </div>
+        {/* Student Navigation Bar */}
+        <StudentNavHeader
+          studentName={student.first_name}
+          studentId={student.id}
+          isJunior={isJunior}
+          isTeen={isTeen}
+          unreadNotificationsCount={announcements?.filter(a => !a.read).length || 0}
+        />
 
         {/* Welcome Header Hero */}
         <WelcomeHero student={student} isJunior={isJunior} isTeen={isTeen} />
+
+        {/* DEL-0064 Quick Dashboard Widgets Row */}
+        <div className="grid-3" style={{ gap: '1.25rem', marginBottom: '2.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))' }}>
+          
+          {/* Homework Due Today Widget */}
+          <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <FileText style={{ width: '16px', height: '16px', color: '#10b981' }} /> Homework Due Today
+              </span>
+              <span className="badge badge-green" style={{ fontSize: '0.7rem' }}>{homeworkDue?.length || 0} Tasks</span>
+            </div>
+            {homeworkDue && homeworkDue.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {homeworkDue.slice(0, 2).map((h: any) => (
+                  <div key={h.id} style={{ fontSize: '0.8rem', color: 'hsl(var(--text-secondary))', background: 'rgba(0,0,0,0.2)', padding: '0.5rem 0.75rem', borderRadius: '6px' }}>
+                    <div style={{ color: '#fff', fontWeight: 600 }}>{h.title}</div>
+                    <div>Due: {new Date(h.due_date).toLocaleDateString()}</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ margin: 0, fontSize: '0.85rem', color: 'hsl(var(--text-secondary))' }}>No pending homework due today!</p>
+            )}
+            <Link href={`/student/dashboard/assignments?studentId=${student.id}`} style={{ fontSize: '0.8rem', color: '#38bdf8', textDecoration: 'none', fontWeight: 600, marginTop: 'auto' }}>
+              Open Homework Portal $\rightarrow$
+            </Link>
+          </div>
+
+          {/* Attendance Summary Widget */}
+          <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <CheckCircle2 style={{ width: '16px', height: '16px', color: '#38bdf8' }} /> Attendance Summary
+              </span>
+              <span className="badge badge-purple" style={{ fontSize: '0.7rem' }}>Good Standing</span>
+            </div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#38bdf8' }}>
+              {bookings.filter(b => b.attended).length} Classes Attended
+            </div>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: 'hsl(var(--text-secondary))' }}>
+              Keep attending live classes to maintain your academic streak!
+            </p>
+            <Link href={`/student/progress?studentId=${student.id}`} style={{ fontSize: '0.8rem', color: '#38bdf8', textDecoration: 'none', fontWeight: 600, marginTop: 'auto' }}>
+              View Progress & Badges $\rightarrow$
+            </Link>
+          </div>
+
+          {/* Future AI Learning Assistant Hook Widget */}
+          <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.75rem', border: '1px solid rgba(232, 28, 255, 0.3)', background: 'rgba(232, 28, 255, 0.05)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                <Sparkles style={{ width: '16px', height: '16px', color: '#e81cff' }} /> AI Study Assistant (Ready)
+              </span>
+              <span className="badge badge-pink" style={{ fontSize: '0.65rem' }}>v2 Extension</span>
+            </div>
+            <p style={{ margin: 0, fontSize: '0.8rem', color: 'hsl(var(--text-secondary))' }}>
+              Modular AI study coach extension point. Prepared for interactive homework explanations & revision planning.
+            </p>
+            <div style={{ fontSize: '0.75rem', color: '#e81cff', fontWeight: 600, marginTop: 'auto' }}>
+              ✦ Framework Extension Ready
+            </div>
+          </div>
+        </div>
 
         {/* Gamified Achievement Showcase */}
         {!isTeen && (
@@ -154,7 +202,7 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
           </div>
         )}
 
-        {/* Pulsing Live Classroom Section */}
+        {/* Live Classroom Section */}
         <ClassroomSection booking={activeBooking} studentName={student.first_name} isJunior={isJunior} />
 
         {/* Calendar and Logic Panels */}
@@ -165,6 +213,5 @@ export default async function StudentDashboardPage({ searchParams }: PageProps) 
 
       </div>
     </div>
-  )
+  );
 }
-

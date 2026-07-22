@@ -1,8 +1,8 @@
 import React from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { getStudentById } from '@/lib/queries';
-import StudentNavHeader from '../../components/StudentNavHeader';
-import StudentAssignmentPortalClient from './components/StudentAssignmentPortalClient';
+import StudentNavHeader from '../components/StudentNavHeader';
+import StudentNotificationsClient from './components/StudentNotificationsClient';
 import { calculateAge, getAgeBracket } from '@/lib/utils';
 import { redirect } from 'next/navigation';
 
@@ -12,7 +12,7 @@ interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
-export default async function StudentAssignmentsPage({ searchParams }: PageProps) {
+export default async function StudentNotificationsPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const studentId = params.studentId as string | undefined;
 
@@ -27,24 +27,14 @@ export default async function StudentAssignmentsPage({ searchParams }: PageProps
   const isJunior = ageBracket === 'junior';
   const isTeen = ageBracket === 'teen';
 
-  // 1. Fetch active assignments
-  const { data: assignments } = await supabase
-    .from('assignments')
-    .select(`
-      *,
-      courses(title),
-      assignment_submissions(*, students(first_name))
-    `)
-    .order('due_date', { ascending: true });
+  // Fetch notifications for student's parent profile or student system broadcasts
+  const { data: notifications } = await supabase
+    .from('notifications')
+    .select('*')
+    .or(`profile_id.eq.${student.parent_id}`)
+    .order('created_at', { ascending: false });
 
-  // Filter submissions for this specific student
-  const formattedAssignments = (assignments || []).map(a => {
-    const studentSub = a.assignment_submissions?.find((s: any) => s.student_id === student.id);
-    return {
-      ...a,
-      submission: studentSub || null
-    };
-  });
+  const unreadCount = notifications?.filter(n => !n.read).length || 0;
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '2.5rem 1.5rem' }}>
@@ -53,12 +43,11 @@ export default async function StudentAssignmentsPage({ searchParams }: PageProps
         studentId={student.id}
         isJunior={isJunior}
         isTeen={isTeen}
+        unreadNotificationsCount={unreadCount}
       />
 
-      <StudentAssignmentPortalClient
-        studentId={student.id}
-        assignments={formattedAssignments}
-        isJunior={isJunior}
+      <StudentNotificationsClient
+        initialNotifications={notifications || []}
       />
     </div>
   );
