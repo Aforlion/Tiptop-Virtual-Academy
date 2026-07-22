@@ -582,5 +582,74 @@ export async function submitAssessmentResponse(
   };
 }
 
+// ============================================================
+// SCHOOL CALENDAR & OPERATIONS MANAGER
+// ============================================================
+
+export async function createCalendarEvent(
+  title: string,
+  description: string,
+  eventDate: string,
+  eventType: 'academic_term' | 'holiday' | 'exam_window' | 'staff_meeting' | 'parent_meeting',
+  syncToGoogle: boolean = true
+): Promise<ActionResult> {
+  if (!title || !eventDate) {
+    return { success: false, error: 'Title and event date are required.' };
+  }
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+
+  if (profile?.role !== 'admin' && profile?.role !== 'head_of_school') {
+    return { success: false, error: 'Unauthorized: Only Executive Admin can create school calendar events.' };
+  }
+
+  await supabase.from('notifications').insert({
+    profile_id: user.id,
+    title: `School Event: ${title}`,
+    body: `${description || title} scheduled for ${new Date(eventDate).toLocaleDateString()}`,
+    type: 'calendar_event'
+  });
+
+  if (syncToGoogle) {
+    await supabase.from('google_sync_retry_queue').insert({
+      action_type: 'create_meet',
+      payload: { title, eventDate, eventType },
+      status: 'pending'
+    });
+  }
+
+  revalidatePath('/admin/calendar');
+  revalidatePath('/admin/dashboard');
+  return { success: true, message: 'School event scheduled and queued for Google Calendar sync!' };
+}
+
+export async function resolveGoogleSyncJob(jobId: string): Promise<ActionResult> {
+  if (!jobId) return { success: false, error: 'Missing job ID.' };
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Unauthorized' };
+
+  const { error } = await supabase
+    .from('google_sync_retry_queue')
+    .update({ status: 'resolved' })
+    .eq('id', jobId);
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath('/admin/dashboard');
+  revalidatePath('/admin/alerts');
+  return { success: true, message: 'Google sync job marked resolved.' };
+}
+
+
 
 

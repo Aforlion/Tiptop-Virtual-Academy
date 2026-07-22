@@ -1,140 +1,179 @@
-import React from 'react'
-import { createClient } from '@/lib/supabase/server'
-import { getAllCourses, getAllLiveSessions } from '@/lib/queries'
-import PageHeader from '@/components/layout/PageHeader'
-import AdminStatsGrid from '../components/AdminStatsGrid'
-import CreateCourseForm from '../components/CreateCourseForm'
-import ScheduleSessionForm from '../components/ScheduleSessionForm'
-import SessionsTable from '../components/SessionsTable'
-import CoursesTable from '../components/CoursesTable'
-import { Code } from 'lucide-react'
-import { getMockDateOffset } from '@/lib/utils'
-import { Course, LiveSessionWithCourse } from '@/lib/types'
+import React from 'react';
+import { createClient } from '@/lib/supabase/server';
+import { calculateInstitutionalKPIs } from '@/lib/kpi-engine';
+import PageHeader from '@/components/layout/PageHeader';
+import AdminNavHeader from '../components/AdminNavHeader';
+import Link from 'next/link';
+import { Users, GraduationCap, DollarSign, Calendar, Clock, CheckCircle2, AlertTriangle, Sparkles, Activity, ShieldCheck } from 'lucide-react';
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
-export default async function AdminDashboardPage() {
-  const supabase = await createClient()
+export default async function ExecutiveDashboardPage() {
+  const supabase = await createClient();
 
-  let courses: Course[] = []
-  let liveSessions: LiveSessionWithCourse[] = []
-  let parentsCount = 0
-  let schemaError = false
-  let firstName = 'Barbara'
-  let role = 'admin'
+  let firstName = 'Barbara';
+  let role = 'admin';
 
-  try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('first_name, role')
-        .eq('id', user.id)
-        .single()
-      if (profile) {
-        firstName = profile.first_name
-        role = profile.role
-      }
-    }
-
-    const { data: coursesData, error: coursesErr } = await getAllCourses()
-    const { data: sessionsData, error: sessionsErr } = await getAllLiveSessions()
-    
-    // Fetch profiles count of type 'parent'
-    const { data: profilesData, error: profilesErr } = await supabase
+  const { data: { user } } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabase
       .from('profiles')
-      .select('id')
-      .eq('role', 'parent')
-
-    if (coursesErr || sessionsErr || profilesErr) {
-      schemaError = true
-    } else {
-      courses = coursesData || []
-      liveSessions = sessionsData || []
-      parentsCount = profilesData?.length || 0
+      .select('first_name, role')
+      .eq('id', user.id)
+      .single();
+    if (profile) {
+      firstName = profile.first_name;
+      role = profile.role;
     }
-  } catch {
-    schemaError = true
   }
 
-  // Fallback Mock Data if schema isn't set up yet so the UI still looks gorgeous and functional
-  if (schemaError || courses.length === 0) {
-    courses = [
-      { id: '1', title: 'Creative Coding & Logic Loops', description: 'Early programming blocks, problem solving, and design patterns.', min_age: 5, max_age: 8, is_published: true, created_at: '' },
-      { id: '2', title: 'Cosmic Astrophysics for Tiny Minds', description: 'Explore stars, gravity, planets, and quantum gravity.', min_age: 7, max_age: 12, is_published: true, created_at: '' },
-      { id: '3', title: 'Intro to Game Design & Python', description: 'Build your first 2D platformer game using pure logic.', min_age: 9, max_age: 12, is_published: true, created_at: '' }
-    ]
-  }
-
-  if (schemaError || liveSessions.length === 0) {
-    liveSessions = [
-      { 
-        id: '1', 
-        course_id: '2',
-        teacher_name: 'Professor Barbara', 
-        meeting_token: 'room-astro', 
-        scheduled_start: getMockDateOffset(5), // starts in 5 minutes!
-        scheduled_end: getMockDateOffset(65),
-        session_type: 'flexible',
-        max_seats: 15,
-        status: 'scheduled',
-        created_at: '',
-        courses: courses[1]
-      },
-      { 
-        id: '2', 
-        course_id: '1',
-        teacher_name: 'Dr. Sarah', 
-        meeting_token: 'room-coding', 
-        scheduled_start: getMockDateOffset(24 * 60), 
-        scheduled_end: getMockDateOffset(25 * 60),
-        session_type: 'cohort',
-        max_seats: 15,
-        status: 'scheduled',
-        created_at: '',
-        courses: courses[0]
-      }
-    ]
-  }
-
-  if (parentsCount === 0) {
-    parentsCount = 2 // Demo fallback
-  }
-
-  const displayRole = role === 'head_of_school' ? 'Head of School' : 'Administrator'
+  // Calculate institutional KPIs from single source of truth engine
+  const kpis = await calculateInstitutionalKPIs();
 
   return (
     <>
-      {/* Header section */}
-      <PageHeader 
-        title={`${firstName}'s Command Center`} 
-        subtitle="Manage curriculum, schedule live classes, and audit active operations."
-        action={
-          <span className="badge badge-purple" style={{ padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
-            System Role: {displayRole}
-          </span>
-        }
+      <AdminNavHeader role={role} userName={firstName} alertsCount={kpis.operational.googleSyncJobsPending} />
+
+      <PageHeader
+        title="Institutional Executive Dashboard"
+        subtitle="Real-time operational command center monitoring academic, financial, and platform performance."
       />
 
+      {/* DEL-0070 8 Core Metric Cards */}
+      <div className="grid-4" style={{ gap: '1.25rem', marginBottom: '2.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '0.75rem', borderRadius: '12px' }}>
+            <Users style={{ width: '24px', height: '24px' }} />
+          </div>
+          <div>
+            <div style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.8rem', fontWeight: 600 }}>Total Students</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff' }}>{kpis.operational.totalStudents}</div>
+          </div>
+        </div>
 
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.75rem', borderRadius: '12px' }}>
+            <GraduationCap style={{ width: '24px', height: '24px' }} />
+          </div>
+          <div>
+            <div style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.8rem', fontWeight: 600 }}>Active Teachers</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff' }}>{kpis.operational.teachersCount}</div>
+          </div>
+        </div>
 
-      {/* Stats Grid */}
-      <AdminStatsGrid 
-        coursesCount={courses.length} 
-        sessionsCount={liveSessions.length} 
-        parentsCount={parentsCount} 
-      />
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ background: 'rgba(232, 28, 255, 0.15)', color: '#e81cff', padding: '0.75rem', borderRadius: '12px' }}>
+            <Users style={{ width: '24px', height: '24px' }} />
+          </div>
+          <div>
+            <div style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.8rem', fontWeight: 600 }}>Parents Registered</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff' }}>{kpis.operational.parentsCount}</div>
+          </div>
+        </div>
 
-      <div className="grid-2" style={{ marginBottom: '2.5rem', alignItems: 'start' }}>
-        <CreateCourseForm />
-        <ScheduleSessionForm courses={courses} />
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ background: 'rgba(245, 158, 11, 0.15)', color: '#f59e0b', padding: '0.75rem', borderRadius: '12px' }}>
+            <Clock style={{ width: '24px', height: '24px' }} />
+          </div>
+          <div>
+            <div style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.8rem', fontWeight: 600 }}>Live Classes Today</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#fff' }}>{kpis.operational.liveClassesToday}</div>
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981', padding: '0.75rem', borderRadius: '12px' }}>
+            <DollarSign style={{ width: '24px', height: '24px' }} />
+          </div>
+          <div>
+            <div style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.8rem', fontWeight: 600 }}>Revenue This Month</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#10b981' }}>₦{kpis.financial.monthlyRevenueNgn.toLocaleString()}</div>
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', padding: '0.75rem', borderRadius: '12px' }}>
+            <DollarSign style={{ width: '24px', height: '24px' }} />
+          </div>
+          <div>
+            <div style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.8rem', fontWeight: 600 }}>Outstanding Invoices</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#ef4444' }}>₦{kpis.financial.outstandingAmountNgn.toLocaleString()}</div>
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '0.75rem', borderRadius: '12px' }}>
+            <CheckCircle2 style={{ width: '24px', height: '24px' }} />
+          </div>
+          <div>
+            <div style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.8rem', fontWeight: 600 }}>Attendance Rate</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#38bdf8' }}>{kpis.operational.attendanceRatePercent}%</div>
+          </div>
+        </div>
+
+        <div className="glass-card" style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ background: 'rgba(168, 85, 247, 0.15)', color: '#a855f7', padding: '0.75rem', borderRadius: '12px' }}>
+            <CheckCircle2 style={{ width: '24px', height: '24px' }} />
+          </div>
+          <div>
+            <div style={{ color: 'hsl(var(--text-secondary))', fontSize: '0.8rem', fontWeight: 600 }}>Assignment Completion</div>
+            <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#a855f7' }}>{kpis.operational.assignmentCompletionRatePercent}%</div>
+          </div>
+        </div>
       </div>
 
-      {/* Scheduled Sessions Table */}
-      <SessionsTable sessions={liveSessions} schemaError={schemaError} />
+      {/* DEL-0070 Executive Summary Cards */}
+      <div className="grid-2" style={{ gap: '1.5rem', marginBottom: '2.5rem', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))' }}>
+        
+        {/* Platform & Google Workspace Health Summary */}
+        <div className="glass-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontWeight: 700, fontSize: '1.15rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Activity style={{ width: '20px', height: '20px', color: '#38bdf8' }} /> System Status & Sync Infrastructure
+            </h3>
+            <span className={`badge ${kpis.operational.platformHealthStatus === 'healthy' ? 'badge-green' : 'badge-yellow'}`}>
+              {kpis.operational.platformHealthStatus.toUpperCase()}
+            </span>
+          </div>
 
-      {/* Existing Courses Library */}
-      <CoursesTable courses={courses} schemaError={schemaError} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.85rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px' }}>
+              <span>Active Google Workspace Sync Queue:</span>
+              <strong style={{ color: kpis.operational.googleSyncJobsPending > 0 ? '#f59e0b' : '#10b981' }}>
+                {kpis.operational.googleSyncJobsPending} Pending Jobs
+              </strong>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0.75rem', background: 'rgba(0,0,0,0.2)', borderRadius: '6px' }}>
+              <span>Database Collection Efficiency:</span>
+              <strong style={{ color: '#10b981' }}>{kpis.financial.collectionRatePercent}%</strong>
+            </div>
+          </div>
+
+          <Link href="/admin/alerts" style={{ fontSize: '0.85rem', color: '#38bdf8', textDecoration: 'none', fontWeight: 600, marginTop: 'auto' }}>
+            Inspect Executive Alerts & Sync Logs $\rightarrow$
+          </Link>
+        </div>
+
+        {/* Executive AI Copilot Extension Hook */}
+        <div className="glass-card" style={{ padding: '1.75rem', display: 'flex', flexDirection: 'column', gap: '1rem', border: '1px solid rgba(232, 28, 255, 0.3)', background: 'rgba(232, 28, 255, 0.05)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontWeight: 700, fontSize: '1.15rem', color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Sparkles style={{ width: '20px', height: '20px', color: '#e81cff' }} /> Executive AI Copilot (Extension Ready)
+            </h3>
+            <span className="badge badge-pink" style={{ fontSize: '0.7rem' }}>AI Extension Point</span>
+          </div>
+
+          <p style={{ margin: 0, fontSize: '0.85rem', color: 'hsl(var(--text-secondary))', lineHeight: '1.5' }}>
+            Extensible framework hook for Revenue Forecasting, Enrollment Prediction, Student Risk Prediction, and Automated Executive Briefings.
+          </p>
+
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginTop: 'auto' }}>
+            <span className="badge badge-purple" style={{ fontSize: '0.65rem' }}>✦ Revenue Model v1.4</span>
+            <span className="badge badge-purple" style={{ fontSize: '0.65rem' }}>✦ Risk Predictor v2.1</span>
+          </div>
+        </div>
+      </div>
     </>
-  )
+  );
 }
