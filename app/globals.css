@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-inter), sans-serif;
+  --font-display: var(--font-outfit), sans-serif;
+  
+  --color-brand-purple: hsl(270, 70%, 40%);
+  --color-brand-gold: hsl(45, 100%, 50%);
+  --color-brand-lavender: hsl(268, 80%, 94%);
+  --color-brand-darkviolet: hsl(273, 85%, 15%);
+  --color-neutral-warmwhite: hsl(36, 33%, 98%);
+  
+  --shadow-premium: 0 10px 30px -10px rgba(39, 0, 77, 0.08), 0 1px 3px rgba(39, 0, 77, 0.02);
+  --shadow-glass: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 8px 32px 0 rgba(39, 0, 77, 0.04);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Open Book Page Curve Transition */
+.book-curve-top {
+  clip-path: ellipse(70% 100% at 50% 0%);
+}
+
+.book-curve-bottom {
+  clip-path: ellipse(75% 100% at 50% 100%);
+}
+
+/* Glassmorphism Surface */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: var(--shadow-glass);
+}
+
+/* Stacked Pages Visual Depth */
+.page-stack {
+  position: relative;
+}
+
+.page-stack::before {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 8px;
+  right: 8px;
+  height: 8px;
+  background: white;
+  border: 1px solid rgba(39, 0, 77, 0.04);
+  border-radius: 12px;
+  z-index: -1;
+  box-shadow: 0 4px 10px rgba(39, 0, 77, 0.03);
+}
+
+.page-stack::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 16px;
+  right: 16px;
+  height: 8px;
+  background: #fbfbf8;
+  border: 1px solid rgba(39, 0, 77, 0.03);
+  border-radius: 12px;
+  z-index: -2;
+  box-shadow: 0 6px 14px rgba(39, 0, 77, 0.02);
+}
