@@ -1,0 +1,16 @@
+# wrangler.toml - Cloudflare Pages & Workers Configuration
+
+name = "tiptop-virtual-academy"
+compatibility_date = "2026-07-28"
+compatibility_flags = ["nodejs_compat"]
+
+# 1. Cloudflare R2 Bucket Binding (for student portfolio file uploads)
+[[r2_buckets]]
+binding = "TIPTOP_R2"
+bucket_name = "tiptop-academy-portfolios"
+preview_bucket_name = "tiptop-academy-portfolios-preview"
+
+# 2. Cloudflare Queues Binding (for asynchronous transactional outbox events sync)
+[[queues.producers]]
+binding = "TIPTOP_QUEUE"
+queue = "tiptop-outbox-events"
