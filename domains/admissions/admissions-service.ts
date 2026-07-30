@@ -1,5 +1,7 @@
 // domains/admissions/admissions-service.ts
 import { CurriculumService } from "../curriculum/curriculum-service";
+import { dbPromise } from "../shared/db/client";
+import { outbox, invoices } from "../shared/db/schema";
 
 export interface EnrollmentRequest {
   id: string;
@@ -14,9 +16,9 @@ export interface EnrollmentRequest {
 }
 
 export class AdmissionsService {
-  private static enrollments: EnrollmentRequest[] = [];
+  private static localEnrollments: EnrollmentRequest[] = [];
 
-  public static createEnrollment(
+  public static async createEnrollment(
     parentName: string,
     parentEmail: string,
     studentName: string,
@@ -24,9 +26,11 @@ export class AdmissionsService {
     programKey: string,
     siblingCount: number,
     referralCode?: string
-  ): EnrollmentRequest {
+  ): Promise<EnrollmentRequest> {
+    const db = await dbPromise;
+
     // Base tuition rates
-    let baseTuition = 750000; // Default Primary
+    let baseTuition = 750000;
     if (programKey === "eyfs") baseTuition = 600000;
     if (programKey === "secondary") baseTuition = 900000;
 
@@ -36,9 +40,10 @@ export class AdmissionsService {
     const referralDiscount = referralCode ? CurriculumService.calculateReferralDiscount(baseTuition, 1) : 0;
 
     const tuitionAmount = Math.max(baseTuition - siblingDiscount - referralDiscount, 0);
+    const enrollmentId = `enr-${Math.floor(Math.random() * 100000)}`;
 
     const enrollment: EnrollmentRequest = {
-      id: `enr-${Math.floor(Math.random() * 100000)}`,
+      id: enrollmentId,
       parentName,
       parentEmail,
       studentName,
@@ -49,11 +54,24 @@ export class AdmissionsService {
       tuitionAmount
     };
 
-    this.enrollments.push(enrollment);
+    this.localEnrollments.push(enrollment);
+
+    // Insert outbox transactional log event
+    await db.insert(outbox).values({
+      eventType: "student.enrolled",
+      payload: JSON.stringify({
+        enrollmentId,
+        studentName,
+        parentName,
+        tuitionAmount
+      }),
+      status: "PENDING"
+    });
+
     return enrollment;
   }
 
   public static getEnrollments(): EnrollmentRequest[] {
-    return this.enrollments;
+    return this.localEnrollments;
   }
 }

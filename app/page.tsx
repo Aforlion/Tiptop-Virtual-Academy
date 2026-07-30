@@ -40,7 +40,7 @@ export default function Home() {
   const [chatHistory, setChatHistory] = useState<{ role: string; content: string; escalated?: boolean }[]>([]);
 
   useEffect(() => {
-    setInvoices(FinanceService.getInvoices());
+    FinanceService.getInvoices().then(setInvoices);
     setSyncLogs(IntegrationService.getLogs());
     
     // Set initial AI role based on active view
@@ -58,11 +58,11 @@ export default function Home() {
   };
 
   // Admissions Submission
-  const handleEnrollSubmit = (e: React.FormEvent) => {
+  const handleEnrollSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!studentName || !birthDate) return;
     
-    const request = AdmissionsService.createEnrollment(
+    const request = await AdmissionsService.createEnrollment(
       "Sarah Smith",
       "parent.smith@gmail.com",
       studentName,
@@ -72,9 +72,10 @@ export default function Home() {
       referral
     );
 
-    // Create corresponding invoice
-    FinanceService.addInvoice("Sarah Smith", studentName, request.tuitionAmount);
-    setInvoices(FinanceService.getInvoices());
+    // Create corresponding invoice in database
+    await FinanceService.addInvoice("Sarah Smith", studentName, request.tuitionAmount);
+    const updatedInvoices = await FinanceService.getInvoices();
+    setInvoices(updatedInvoices);
 
     // Trigger Outbox Integration event
     const integrationLog = IntegrationService.triggerSync("student.enrolled", {
@@ -90,10 +91,11 @@ export default function Home() {
   };
 
   // Invoice Payment Processing
-  const handlePayInvoice = (id: string) => {
-    const success = FinanceService.payInvoice(id);
+  const handlePayInvoice = async (id: string) => {
+    const success = await FinanceService.payInvoice(id);
     if (success) {
-      setInvoices(FinanceService.getInvoices());
+      const updatedInvoices = await FinanceService.getInvoices();
+      setInvoices(updatedInvoices);
       IntegrationService.triggerSync("invoice.paid", { invoiceId: id });
       setSyncLogs(IntegrationService.getLogs());
     }

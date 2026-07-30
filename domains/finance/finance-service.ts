@@ -1,4 +1,7 @@
 // domains/finance/finance-service.ts
+import { dbPromise } from "../shared/db/client";
+import { invoices } from "../shared/db/schema";
+import { eq } from "drizzle-orm";
 
 export interface Invoice {
   id: string;
@@ -10,49 +13,59 @@ export interface Invoice {
 }
 
 export class FinanceService {
-  private static invoices: Invoice[] = [
-    {
-      id: "inv-2001",
-      parentName: "Sarah Smith",
-      studentName: "Alice Smith",
-      amount: 675000, // Year 3 tuition after sibling discount
-      status: "PAID",
-      dueDate: "2026-08-01"
-    },
-    {
-      id: "inv-2002",
-      parentName: "Sarah Smith",
-      studentName: "James Smith",
-      amount: 675000,
-      status: "UNPAID",
-      dueDate: "2026-08-01"
-    }
-  ];
+  public static async getInvoices(parentName?: string): Promise<Invoice[]> {
+    const db = await dbPromise;
+    const dbInvoices = await db.query.invoices.findMany();
+    
+    // Map database rows to UI Invoice interface
+    const mapped = dbInvoices.map((inv) => ({
+      id: inv.id,
+      parentName: "Sarah Smith", // Map to mock parent name or profile relations
+      studentName: inv.studentName,
+      amount: Number(inv.amount),
+      status: inv.status as "PAID" | "UNPAID",
+      dueDate: inv.dueDate
+    }));
 
-  public static getInvoices(parentName?: string): Invoice[] {
     if (parentName) {
-      return this.invoices.filter((inv) => inv.parentName === parentName);
+      return mapped.filter((inv) => inv.parentName === parentName);
     }
-    return this.invoices;
+    return mapped;
   }
 
-  public static addInvoice(parentName: string, studentName: string, amount: number): Invoice {
-    const invoice: Invoice = {
-      id: `inv-${Math.floor(Math.random() * 9000) + 1000}`,
+  public static async addInvoice(parentName: string, studentName: string, amount: number): Promise<Invoice> {
+    const db = await dbPromise;
+    const newId = crypto.randomUUID();
+    const dueDateStr = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+    await db.insert(invoices).values({
+      id: newId,
+      studentName,
+      amount: amount.toString(),
+      status: "UNPAID",
+      dueDate: dueDateStr
+    });
+
+    return {
+      id: newId,
       parentName,
       studentName,
       amount,
       status: "UNPAID",
-      dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0] // 14 days out
+      dueDate: dueDateStr
     };
-    this.invoices.push(invoice);
-    return invoice;
   }
 
-  public static payInvoice(id: string): boolean {
-    const invoice = this.invoices.find((inv) => inv.id === id);
-    if (invoice && invoice.status === "UNPAID") {
-      invoice.status = "PAID";
+  public static async payInvoice(id: string): Promise<boolean> {
+    const db = await dbPromise;
+    const targetInvoice = await db.query.invoices.findFirst({
+      where: eq(invoices.id, id)
+    });
+
+    if (targetInvoice && targetInvoice.status === "UNPAID") {
+      await db.update(invoices)
+        .set({ status: "PAID" })
+        .where(eq(invoices.id, id));
       return true;
     }
     return false;
