@@ -1,27 +1,28 @@
 // domains/shared/db/client.ts
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Client } from "pg";
+import { drizzle } from "drizzle-orm/neon-serverless";
+import { Client } from "@neondatabase/serverless";
 import * as schema from "./schema";
 
-// Create pg client for Node.js environments (local dev server & server side runs)
-const pgClient = new Client({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
+// Lazy initialize database connection to prevent build-time connection attempts
+let dbInstance: any = null;
 
-// Prevent crash on hot reload connections limit
-let isConnected = false;
-async function getDb() {
-  if (!isConnected) {
-    try {
-      await pgClient.connect();
-      isConnected = true;
-    } catch (err) {
-      console.error("Database connection connection failed:", err);
-    }
+export async function getDb() {
+  if (dbInstance) return dbInstance;
+
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("Missing DATABASE_URL environment variable.");
   }
-  return drizzle(pgClient, { schema });
+
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false }
+  });
+
+  await client.connect();
+  dbInstance = drizzle(client, { schema });
+  return dbInstance;
 }
 
-export const dbPromise = getDb();
 export { schema };
+export const dbPromise = getDb();
