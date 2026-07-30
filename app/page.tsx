@@ -102,24 +102,34 @@ export default function Home() {
   };
 
   // AI Assistant Interaction
-  const handleAiChatSubmit = (e: React.FormEvent) => {
+  const handleAiChatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!chatPrompt.trim()) return;
 
     const newHistory = [...chatHistory, { role: "user", content: chatPrompt }];
     setChatHistory(newHistory);
-
-    const response = OracleService.chat(aiRole, chatPrompt);
+    const userQuery = chatPrompt;
     setChatPrompt("");
 
-    setTimeout(() => {
-      setChatHistory([...newHistory, { role: "assistant", content: response.content, escalated: response.escalated }]);
-      if (response.escalated) {
-        // Trigger safeguarding log
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ role: aiRole, prompt: userQuery })
+      });
+
+      const data = await response.json();
+      setChatHistory([...newHistory, { role: "assistant", content: data.content, escalated: data.escalated }]);
+
+      if (data.escalated) {
+        // Trigger local visual alert logs sync
         IntegrationService.triggerSync("alert.safeguarding", { message: "AI escalated student prompt." });
         setSyncLogs(IntegrationService.getLogs());
       }
-    }, 800);
+    } catch (err) {
+      console.error("AI response fetch error:", err);
+      setChatHistory([...newHistory, { role: "assistant", content: "Sorry, I had trouble communicating with the Oracle. Please check your network connection." }]);
+    }
   };
 
   return (
