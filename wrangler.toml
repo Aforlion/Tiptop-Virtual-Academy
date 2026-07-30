@@ -10,13 +10,13 @@ main = ".vercel/output/static/_worker.js"
 [assets]
 directory = ".vercel/output/static"
 
-# 1. Cloudflare R2 Bucket Binding (for student portfolio file uploads)
-[[r2_buckets]]
-binding = "TIPTOP_R2"
-bucket_name = "tiptop-academy-portfolios"
-preview_bucket_name = "tiptop-academy-portfolios-preview"
+# 1. Cloudflare R2 Bucket Binding (Commented out until R2 is enabled in dashboard)
+# [[r2_buckets]]
+# binding = "TIPTOP_R2"
+# bucket_name = "tiptop-academy-portfolios"
+# preview_bucket_name = "tiptop-academy-portfolios-preview"
 
-# 2. Cloudflare Queues Binding (for asynchronous transactional outbox events sync)
-[[queues.producers]]
-binding = "TIPTOP_QUEUE"
-queue = "tiptop-outbox-events"
+# 2. Cloudflare Queues Binding (Commented out until Queues are enabled in dashboard)
+# [[queues.producers]]
+# binding = "TIPTOP_QUEUE"
+# queue = "tiptop-outbox-events"
