@@ -4,6 +4,12 @@ name = "tiptop-virtual-academy"
 compatibility_date = "2026-07-28"
 compatibility_flags = ["nodejs_compat"]
 
+# Build output entry-points for Next-on-Pages / Wrangler deployment
+main = ".vercel/output/static/_worker.js"
+
+[assets]
+directory = ".vercel/output/static"
+
 # 1. Cloudflare R2 Bucket Binding (for student portfolio file uploads)
 [[r2_buckets]]
 binding = "TIPTOP_R2"
