@@ -187,7 +187,7 @@ export default function Home() {
               {isSignedIn ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-neutral-slate font-medium hidden md:inline">Hello, {user.firstName || "Scholar"}</span>
-                  <UserButton afterSignOutUrl="/" />
+                  <UserButton />
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
