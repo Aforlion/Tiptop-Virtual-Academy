@@ -18,7 +18,7 @@ export class FinanceService {
     const dbInvoices = await db.query.invoices.findMany();
     
     // Map database rows to UI Invoice interface
-    const mapped = dbInvoices.map((inv) => ({
+    const mapped = dbInvoices.map((inv: any) => ({
       id: inv.id,
       parentName: "Sarah Smith", // Map to mock parent name or profile relations
       studentName: inv.studentName,
@@ -28,7 +28,7 @@ export class FinanceService {
     }));
 
     if (parentName) {
-      return mapped.filter((inv) => inv.parentName === parentName);
+      return mapped.filter((inv: any) => inv.parentName === parentName);
     }
     return mapped;
   }
