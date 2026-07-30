@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
 import { CurriculumService } from "../domains/curriculum/curriculum-service";
 import { IdentityService, UserRole, MOCK_USERS, StudentProfile } from "../domains/shared/services/identity-service";
-import { AdmissionsService, EnrollmentRequest } from "../domains/admissions/admissions-service";
-import { FinanceService, Invoice } from "../domains/finance/finance-service";
+import type { EnrollmentRequest } from "../domains/admissions/admissions-service";
+import type { Invoice } from "../domains/finance/finance-service";
 import { LearningService, Session, AttendanceRecord } from "../domains/students/learning-service";
 import { AssessmentService, Assignment, Submission } from "../domains/assessment/assessment-service";
 import { IntegrationService, IntegrationLog } from "../domains/shared/services/integration-service";
@@ -58,7 +58,10 @@ export default function Home() {
   }, [isLoaded, isSignedIn, user]);
 
   useEffect(() => {
-    FinanceService.getInvoices().then(setInvoices);
+    fetch("/api/invoices")
+      .then((res) => res.json())
+      .then(setInvoices)
+      .catch((err) => console.error("Error loading invoices:", err));
     setSyncLogs(IntegrationService.getLogs());
     
     // Set initial AI role based on active view
@@ -80,42 +83,73 @@ export default function Home() {
     e.preventDefault();
     if (!studentName || !birthDate) return;
     
-    const request = await AdmissionsService.createEnrollment(
-      "Sarah Smith",
-      "parent.smith@gmail.com",
-      studentName,
-      birthDate,
-      programKey,
-      siblings,
-      referral
-    );
+    try {
+      const enrollRes = await fetch("/api/admissions/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parentName: "Sarah Smith",
+          parentEmail: "parent.smith@gmail.com",
+          studentName,
+          studentBirthDate: birthDate,
+          programKey,
+          siblingCount: siblings,
+          referralCode: referral
+        })
+      });
+      const request = await enrollRes.json();
 
-    // Create corresponding invoice in database
-    await FinanceService.addInvoice("Sarah Smith", studentName, request.tuitionAmount);
-    const updatedInvoices = await FinanceService.getInvoices();
-    setInvoices(updatedInvoices);
+      // Create corresponding invoice in database
+      await fetch("/api/invoices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parentName: "Sarah Smith",
+          studentName,
+          amount: request.tuitionAmount
+        })
+      });
 
-    // Trigger Outbox Integration event
-    const integrationLog = IntegrationService.triggerSync("student.enrolled", {
-      studentName,
-      programKey,
-      tuitionAmount: request.tuitionAmount
-    });
-    setSyncLogs(IntegrationService.getLogs());
+      const invRes = await fetch("/api/invoices");
+      const updatedInvoices = await invRes.json();
+      setInvoices(updatedInvoices);
 
-    setEnrollmentStatus(`Registration Successful! Invoice generated: N${request.tuitionAmount.toLocaleString()}`);
-    setStudentName("");
-    setBirthDate("");
+      // Trigger Outbox Integration event
+      const integrationLog = IntegrationService.triggerSync("student.enrolled", {
+        studentName,
+        programKey,
+        tuitionAmount: request.tuitionAmount
+      });
+      setSyncLogs(IntegrationService.getLogs());
+
+      setEnrollmentStatus(`Registration Successful! Invoice generated: N${request.tuitionAmount.toLocaleString()}`);
+      setStudentName("");
+      setBirthDate("");
+    } catch (err) {
+      console.error("Enrollment error:", err);
+      setEnrollmentStatus("Registration failed. Please check connection.");
+    }
   };
 
   // Invoice Payment Processing
   const handlePayInvoice = async (id: string) => {
-    const success = await FinanceService.payInvoice(id);
-    if (success) {
-      const updatedInvoices = await FinanceService.getInvoices();
-      setInvoices(updatedInvoices);
-      IntegrationService.triggerSync("invoice.paid", { invoiceId: id });
-      setSyncLogs(IntegrationService.getLogs());
+    try {
+      const payRes = await fetch("/api/invoices/pay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id })
+      });
+      const payData = await payRes.json();
+
+      if (payData.success) {
+        const invRes = await fetch("/api/invoices");
+        const updatedInvoices = await invRes.json();
+        setInvoices(updatedInvoices);
+        IntegrationService.triggerSync("invoice.paid", { invoiceId: id });
+        setSyncLogs(IntegrationService.getLogs());
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
     }
   };
 
