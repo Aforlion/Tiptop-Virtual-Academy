@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
 import { CurriculumService } from "../domains/curriculum/curriculum-service";
 import { IdentityService, UserRole, MOCK_USERS, StudentProfile } from "../domains/shared/services/identity-service";
 import { AdmissionsService, EnrollmentRequest } from "../domains/admissions/admissions-service";
@@ -11,6 +12,8 @@ import { IntegrationService, IntegrationLog } from "../domains/shared/services/i
 import { OracleService, AIRole } from "../domains/academy-intelligence/oracle-service";
 
 export default function Home() {
+  const { isLoaded, isSignedIn, user } = useUser();
+
   // Navigation & Role State
   const [activeView, setActiveView] = useState<"landing" | "student" | "parent" | "teacher" | "executive">("landing");
   const [activeStudentMode, setActiveStudentMode] = useState<"junior" | "senior">("junior");
@@ -38,6 +41,21 @@ export default function Home() {
   const [aiRole, setAiRole] = useState<AIRole>("ADMISSIONS");
   const [chatPrompt, setChatPrompt] = useState("");
   const [chatHistory, setChatHistory] = useState<{ role: string; content: string; escalated?: boolean }[]>([]);
+
+  useEffect(() => {
+    if (isLoaded) {
+      if (isSignedIn && user) {
+        const userRole = (user.publicMetadata?.role as string) || "student";
+        if (["student", "parent", "teacher", "executive"].includes(userRole)) {
+          setActiveView(userRole as any);
+        } else {
+          setActiveView("student");
+        }
+      } else {
+        setActiveView("landing");
+      }
+    }
+  }, [isLoaded, isSignedIn, user]);
 
   useEffect(() => {
     FinanceService.getInvoices().then(setInvoices);
@@ -162,6 +180,28 @@ export default function Home() {
           <span className="text-[10px] bg-brand-purple/5 text-brand-purple border border-brand-purple/10 px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
             {activeView} Portal
           </span>
+
+          {/* Clerk Auth Integration */}
+          {isLoaded && (
+            <>
+              {isSignedIn ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-neutral-slate font-medium hidden md:inline">Hello, {user.firstName || "Scholar"}</span>
+                  <UserButton afterSignOutUrl="/" />
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <SignInButton mode="modal">
+                    <button className="px-3 py-1.5 text-xs font-bold text-brand-purple hover:text-brand-purple/80 transition-all">Sign In</button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <button className="px-3 py-1.5 text-xs font-bold bg-brand-purple text-brand-gold rounded-xl hover:bg-brand-purple/90 shadow-md transition-all">Register</button>
+                  </SignUpButton>
+                </div>
+              )}
+            </>
+          )}
+
           <button 
             onClick={() => setIsChatOpen(!isChatOpen)}
             className="w-10 h-10 bg-brand-purple hover:bg-brand-purple/90 text-brand-gold rounded-xl flex items-center justify-center shadow-lg transition-all active:scale-95 text-lg"
