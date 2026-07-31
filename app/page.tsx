@@ -68,6 +68,27 @@ export default function Home() {
     updateAiRole(activeView);
   }, [activeView]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("payment") === "success") {
+      const invoiceId = params.get("invoiceId");
+      
+      // Update UI invoices immediately
+      fetch("/api/invoices")
+        .then((res) => res.json())
+        .then(setInvoices);
+
+      // Trigger Integration sync outbox log
+      IntegrationService.triggerSync("invoice.paid", { invoiceId });
+      setSyncLogs(IntegrationService.getLogs());
+
+      alert(`Payment Successful! Thank you. Invoice ${invoiceId} has been credited.`);
+      
+      // Remove query parameters from address bar
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   const updateAiRole = (view: typeof activeView) => {
     switch(view) {
       case "landing": setAiRole("ADMISSIONS"); break;
@@ -134,22 +155,22 @@ export default function Home() {
   // Invoice Payment Processing
   const handlePayInvoice = async (id: string) => {
     try {
-      const payRes = await fetch("/api/invoices/pay", {
+      const payRes = await fetch("/api/checkout/paystack", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id })
+        body: JSON.stringify({ invoiceId: id, email: user?.primaryEmailAddress?.emailAddress || "parent.smith@gmail.com" })
       });
       const payData = await payRes.json();
 
-      if (payData.success) {
-        const invRes = await fetch("/api/invoices");
-        const updatedInvoices = await invRes.json();
-        setInvoices(updatedInvoices);
-        IntegrationService.triggerSync("invoice.paid", { invoiceId: id });
-        setSyncLogs(IntegrationService.getLogs());
+      if (payData.authorizationUrl) {
+        // Redirect to Paystack secure payment sandbox page
+        window.location.href = payData.authorizationUrl;
+      } else {
+        alert(payData.error || "Paystack sandbox initialization failed.");
       }
     } catch (err) {
       console.error("Payment error:", err);
+      alert("Payment initialization error. Check console.");
     }
   };
 
