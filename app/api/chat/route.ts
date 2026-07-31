@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { dbPromise } from "../../../domains/shared/db/client";
+import { getDb } from "../../../domains/shared/db/client";
 import { outbox } from "../../../domains/shared/db/schema";
 
 // Force Edge runtime for Cloudflare compatibility
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
       cleanPrompt.includes("hurt") ||
       cleanPrompt.includes("sad")
     ) {
-      const db = await dbPromise;
+      const db = await getDb();
       // Record safeguarding escalation in outbox
       await db.insert(outbox).values({
         eventType: "alert.safeguarding",

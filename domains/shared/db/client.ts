@@ -25,4 +25,3 @@ export async function getDb() {
 }
 
 export { schema };
-export const dbPromise = getDb();

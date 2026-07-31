@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { FinanceService } from "../../../../domains/finance/finance-service";
 
+export const runtime = "edge";
+
 export async function POST(req: NextRequest) {
   try {
     const { id } = await req.json();

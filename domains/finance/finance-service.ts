@@ -1,5 +1,5 @@
 // domains/finance/finance-service.ts
-import { dbPromise } from "../shared/db/client";
+import { getDb } from "../shared/db/client";
 import { invoices } from "../shared/db/schema";
 import { eq } from "drizzle-orm";
 
@@ -14,7 +14,7 @@ export interface Invoice {
 
 export class FinanceService {
   public static async getInvoices(parentName?: string): Promise<Invoice[]> {
-    const db = await dbPromise;
+    const db = await getDb();
     const dbInvoices = await db.query.invoices.findMany();
     
     // Map database rows to UI Invoice interface
@@ -34,7 +34,7 @@ export class FinanceService {
   }
 
   public static async addInvoice(parentName: string, studentName: string, amount: number): Promise<Invoice> {
-    const db = await dbPromise;
+    const db = await getDb();
     const newId = crypto.randomUUID();
     const dueDateStr = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
@@ -57,7 +57,7 @@ export class FinanceService {
   }
 
   public static async payInvoice(id: string): Promise<boolean> {
-    const db = await dbPromise;
+    const db = await getDb();
     const targetInvoice = await db.query.invoices.findFirst({
       where: eq(invoices.id, id)
     });

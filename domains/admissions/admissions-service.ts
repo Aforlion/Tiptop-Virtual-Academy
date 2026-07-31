@@ -1,6 +1,6 @@
 // domains/admissions/admissions-service.ts
 import { CurriculumService } from "../curriculum/curriculum-service";
-import { dbPromise } from "../shared/db/client";
+import { getDb } from "../shared/db/client";
 import { outbox, invoices } from "../shared/db/schema";
 
 export interface EnrollmentRequest {
@@ -27,7 +27,7 @@ export class AdmissionsService {
     siblingCount: number,
     referralCode?: string
   ): Promise<EnrollmentRequest> {
-    const db = await dbPromise;
+    const db = await getDb();
 
     // Base tuition rates
     let baseTuition = 750000;
