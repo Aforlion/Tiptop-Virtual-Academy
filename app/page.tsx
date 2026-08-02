@@ -29,6 +29,7 @@ export default function Home() {
   // Student Dashboard State
   const [wellbeingEmoji, setWellbeingEmoji] = useState("");
   const [activeStudentId, setActiveStudentId] = useState("std-1");
+  const [studentSessions, setStudentSessions] = useState<Session[]>([]);
 
   // Parent State
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -62,6 +63,12 @@ export default function Home() {
       .then((res) => res.json())
       .then(setInvoices)
       .catch((err) => console.error("Error loading invoices:", err));
+
+    fetch("/api/learning/sessions")
+      .then((res) => res.json())
+      .then(setStudentSessions)
+      .catch((err) => console.error("Error loading sessions:", err));
+
     setSyncLogs(IntegrationService.getLogs());
     
     // Set initial AI role based on active view
@@ -202,6 +209,24 @@ export default function Home() {
     } catch (err) {
       console.error("AI response fetch error:", err);
       setChatHistory([...newHistory, { role: "assistant", content: "Sorry, I had trouble communicating with the Oracle. Please check your network connection." }]);
+    }
+  };
+
+  // Wellbeing Check-in Handler
+  const handleWellbeingClick = async (emoji: string) => {
+    setWellbeingEmoji(emoji);
+    try {
+      await fetch("/api/learning/attendance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          sessionId: "ses-101",
+          studentId: activeStudentId,
+          status: "PRESENT"
+        })
+      });
+    } catch (err) {
+      console.error("Error logging attendance:", err);
     }
   };
 
@@ -427,7 +452,7 @@ export default function Home() {
                 <div className={`p-8 rounded-3xl border shadow-premium space-y-5 transition-all duration-300 ${activeStudentMode === "junior" ? "bg-amber-50/40 border-brand-gold/30" : "bg-white border-neutral-100"}`}>
                   <h4 className={`font-display text-xl font-black ${activeStudentMode === "junior" ? "text-amber-800" : "text-brand-darkviolet"}`}>Today's Interactive Classes</h4>
                   <div className="space-y-4">
-                    {LearningService.getSessions().map((ses) => (
+                    {studentSessions.map((ses) => (
                       <div key={ses.id} className="bg-white border border-neutral-100 p-5 rounded-2xl flex items-center justify-between shadow-sm hover:shadow-md transition-all">
                         <div>
                           <h5 className="font-display font-extrabold text-sm text-brand-darkviolet">{ses.title}</h5>
@@ -462,10 +487,7 @@ export default function Home() {
                     {["😊", "🌟", "😐", "😢", "😰"].map((emoji) => (
                       <button 
                         key={emoji}
-                        onClick={() => {
-                          setWellbeingEmoji(emoji);
-                          LearningService.logAttendance("ses-101", activeStudentId, "PRESENT");
-                        }}
+                        onClick={() => handleWellbeingClick(emoji)}
                         className={`hover:scale-135 active:scale-95 transition-all p-2 rounded-xl ${wellbeingEmoji === emoji ? "bg-brand-gold/15 shadow-sm" : ""}`}
                       >
                         {emoji}
