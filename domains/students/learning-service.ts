@@ -1,4 +1,7 @@
 // domains/students/learning-service.ts
+import { getDb } from "../shared/db/client";
+import { cohorts, sessions, attendance } from "../shared/db/schema";
+import { eq, and } from "drizzle-orm";
 
 export interface Cohort {
   id: string;
@@ -17,6 +20,7 @@ export interface Session {
 }
 
 export interface AttendanceRecord {
+  id?: string;
   sessionId: string;
   studentId: string;
   status: "PRESENT" | "ABSENT" | "LATE";
@@ -24,57 +28,73 @@ export interface AttendanceRecord {
 }
 
 export class LearningService {
-  private static cohorts: Cohort[] = [
-    { id: "coh-math-5a", name: "Mathematics - Year 5 - Cohort A", level: "Key Stage 2" },
-    { id: "coh-science-6b", name: "Science - Year 6 - Cohort B", level: "Key Stage 2" }
-  ];
-
-  private static sessions: Session[] = [
-    {
-      id: "ses-101",
-      cohortId: "coh-math-5a",
-      title: "Introduction to Fractions & Equivalent Values",
-      startTime: "2026-07-27T09:00:00Z",
-      endTime: "2026-07-27T10:00:00Z",
-      meetUrl: "https://meet.google.com/abc-defg-hij",
-      teacherId: "tch-1"
-    },
-    {
-      id: "ses-102",
-      cohortId: "coh-science-6b",
-      title: "Exploring Mammal and Insect Life Cycles",
-      startTime: "2026-07-27T11:00:00Z",
-      endTime: "2026-07-27T12:00:00Z",
-      meetUrl: "https://meet.google.com/xyz-uvwx-yza",
-      teacherId: "tch-1"
-    }
-  ];
-
-  private static attendanceLogs: AttendanceRecord[] = [];
-
-  public static getCohorts(): Cohort[] {
-    return this.cohorts;
+  public static async getCohorts(): Promise<Cohort[]> {
+    const db = await getDb();
+    const dbCohorts = await db.query.cohorts.findMany();
+    return dbCohorts.map((c: any) => ({
+      id: c.id,
+      name: c.name,
+      level: c.level
+    }));
   }
 
-  public static getSessions(cohortId?: string): Session[] {
+  public static async getSessions(cohortId?: string): Promise<Session[]> {
+    const db = await getDb();
+    let dbSessions;
+    
     if (cohortId) {
-      return this.sessions.filter((ses) => ses.cohortId === cohortId);
+      dbSessions = await db.query.sessions.findMany({
+        where: eq(sessions.cohortId, cohortId)
+      });
+    } else {
+      dbSessions = await db.query.sessions.findMany();
     }
-    return this.sessions;
+
+    return dbSessions.map((s: any) => ({
+      id: s.id,
+      cohortId: s.cohortId,
+      title: s.title,
+      startTime: s.startTime,
+      endTime: s.endTime,
+      meetUrl: s.meetUrl,
+      teacherId: s.teacherId
+    }));
   }
 
-  public static logAttendance(sessionId: string, studentId: string, status: "PRESENT" | "ABSENT" | "LATE"): AttendanceRecord {
-    const record: AttendanceRecord = {
+  public static async logAttendance(sessionId: string, studentId: string, status: "PRESENT" | "ABSENT" | "LATE"): Promise<AttendanceRecord> {
+    const db = await getDb();
+    const newId = crypto.randomUUID();
+    const loggedAtStr = new Date().toISOString();
+
+    await db.insert(attendance).values({
+      id: newId,
       sessionId,
       studentId,
       status,
-      loggedAt: new Date().toISOString()
+      loggedAt: loggedAtStr
+    });
+
+    return {
+      id: newId,
+      sessionId,
+      studentId,
+      status,
+      loggedAt: loggedAtStr
     };
-    this.attendanceLogs.push(record);
-    return record;
   }
 
-  public static getAttendance(studentId: string): AttendanceRecord[] {
-    return this.attendanceLogs.filter((rec) => rec.studentId === studentId);
+  public static async getAttendance(studentId: string): Promise<AttendanceRecord[]> {
+    const db = await getDb();
+    const records = await db.query.attendance.findMany({
+      where: eq(attendance.studentId, studentId)
+    });
+
+    return records.map((r: any) => ({
+      id: r.id,
+      sessionId: r.sessionId,
+      studentId: r.studentId,
+      status: r.status as "PRESENT" | "ABSENT" | "LATE",
+      loggedAt: r.loggedAt
+    }));
   }
 }

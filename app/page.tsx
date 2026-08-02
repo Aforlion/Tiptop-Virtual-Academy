@@ -6,7 +6,7 @@ import { CurriculumService } from "../domains/curriculum/curriculum-service";
 import { IdentityService, UserRole, MOCK_USERS, StudentProfile } from "../domains/shared/services/identity-service";
 import type { EnrollmentRequest } from "../domains/admissions/admissions-service";
 import type { Invoice } from "../domains/finance/finance-service";
-import { LearningService, Session, AttendanceRecord } from "../domains/students/learning-service";
+import type { Session, AttendanceRecord } from "../domains/students/learning-service";
 import { AssessmentService, Assignment, Submission } from "../domains/assessment/assessment-service";
 import { IntegrationService, IntegrationLog } from "../domains/shared/services/integration-service";
 import { OracleService, AIRole } from "../domains/academy-intelligence/oracle-service";
