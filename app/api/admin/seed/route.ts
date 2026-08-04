@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     }).onConflictDoNothing();
 
     // 2. Create Mock Student Profile
-    const studentId = "std-10111111-1111-1111-1111-111111111111"; // Fixed valid UUID format
+    const studentId = "10111111-1111-1111-1111-111111111111"; // Valid hex UUID format
     await db.insert(profiles).values({
       id: studentId,
       name: "Sarah Junior",
@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
     }).onConflictDoNothing();
 
     // 4. Create Mock Sessions
-    const sessionId1 = "ses-10111111-1111-1111-1111-111111111111"; // Fixed valid UUID format
+    const sessionId1 = "20111111-1111-1111-1111-111111111111"; // Valid hex UUID format
     const now = new Date();
     const oneHourLater = new Date(now.getTime() + 60 * 60 * 1000);
 

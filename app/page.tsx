@@ -28,7 +28,7 @@ export default function Home() {
 
   // Student Dashboard State
   const [wellbeingEmoji, setWellbeingEmoji] = useState("");
-  const [activeStudentId, setActiveStudentId] = useState("std-10111111-1111-1111-1111-111111111111");
+  const [activeStudentId, setActiveStudentId] = useState("10111111-1111-1111-1111-111111111111");
   const [studentSessions, setStudentSessions] = useState<Session[]>([]);
 
   // Parent State
@@ -217,7 +217,7 @@ export default function Home() {
     setWellbeingEmoji(emoji);
     const activeSessionId = studentSessions.length > 0 
       ? studentSessions[0].id 
-      : "ses-10111111-1111-1111-1111-111111111111";
+      : "20111111-1111-1111-1111-111111111111";
 
     try {
       await fetch("/api/learning/attendance", {
