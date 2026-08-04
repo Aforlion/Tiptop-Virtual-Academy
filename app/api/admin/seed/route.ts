@@ -12,16 +12,18 @@ export async function GET(req: NextRequest) {
     const teacherId = crypto.randomUUID();
     await db.insert(profiles).values({
       id: teacherId,
-      name: "Tutor Mark",
-      role: "teacher"
+      email: "mark@tiptopvirtualacademy.com",
+      fullName: "Tutor Mark",
+      role: "TEACHER"
     }).onConflictDoNothing();
 
     // 2. Create Mock Student Profile
     const studentId = "10111111-1111-1111-1111-111111111111"; // Valid hex UUID format
     await db.insert(profiles).values({
       id: studentId,
-      name: "Sarah Junior",
-      role: "student"
+      email: "sarah@tiptopvirtualacademy.com",
+      fullName: "Sarah Junior",
+      role: "STUDENT"
     }).onConflictDoNothing();
 
     // 3. Create Mock Cohort
