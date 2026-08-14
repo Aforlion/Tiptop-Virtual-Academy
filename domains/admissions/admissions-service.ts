@@ -3,6 +3,17 @@ import { CurriculumService } from "../curriculum/curriculum-service";
 import { getDb } from "../shared/db/client";
 import { outbox, invoices } from "../shared/db/schema";
 
+export interface OpenDayBooking {
+  id: string;
+  parentName: string;
+  parentEmail: string;
+  phone: string;
+  preferredDate: string;
+  keyStage: string;
+  notes?: string;
+  createdAt: string;
+}
+
 export interface EnrollmentRequest {
   id: string;
   parentName: string;
@@ -10,6 +21,8 @@ export interface EnrollmentRequest {
   studentName: string;
   studentBirthDate: string;
   programKey: string;
+  learningMode?: "full-time" | "homeschooling" | "modular";
+  currency?: "NGN" | "GBP";
   referralCode?: string;
   status: "pending_payment" | "enrolled";
   tuitionAmount: number;
@@ -17,6 +30,33 @@ export interface EnrollmentRequest {
 
 export class AdmissionsService {
   private static localEnrollments: EnrollmentRequest[] = [];
+  private static localOpenDayBookings: OpenDayBooking[] = [];
+
+  public static async bookOpenDay(
+    parentName: string,
+    parentEmail: string,
+    phone: string,
+    preferredDate: string,
+    keyStage: string,
+    notes?: string
+  ): Promise<OpenDayBooking> {
+    const booking: OpenDayBooking = {
+      id: `odb-${Math.floor(Math.random() * 100000)}`,
+      parentName,
+      parentEmail,
+      phone,
+      preferredDate,
+      keyStage,
+      notes,
+      createdAt: new Date().toISOString()
+    };
+    this.localOpenDayBookings.push(booking);
+    return booking;
+  }
+
+  public static getOpenDayBookings(): OpenDayBooking[] {
+    return this.localOpenDayBookings;
+  }
 
   public static async createEnrollment(
     parentName: string,
@@ -25,14 +65,23 @@ export class AdmissionsService {
     studentBirthDate: string,
     programKey: string,
     siblingCount: number,
+    learningMode: "full-time" | "homeschooling" | "modular" = "full-time",
+    currency: "NGN" | "GBP" = "NGN",
     referralCode?: string
   ): Promise<EnrollmentRequest> {
     const db = await getDb();
 
-    // Base tuition rates
-    let baseTuition = 750000;
-    if (programKey === "eyfs") baseTuition = 600000;
-    if (programKey === "secondary") baseTuition = 900000;
+    // Base tuition rates in NGN
+    let baseTuitionNGN = 750000;
+    if (programKey === "eyfs") baseTuitionNGN = 600000;
+    if (programKey === "secondary") baseTuitionNGN = 900000;
+
+    // Adjust for learning mode (Homeschooling is 75%, Modular is 50%)
+    if (learningMode === "homeschooling") baseTuitionNGN *= 0.75;
+    if (learningMode === "modular") baseTuitionNGN *= 0.50;
+
+    // Convert to GBP if requested (approx conversion factor: 1 GBP = 2000 NGN)
+    let baseTuition = currency === "GBP" ? Math.round(baseTuitionNGN / 2000) : baseTuitionNGN;
 
     // Sibling discounts
     const siblingDiscount = CurriculumService.calculateSiblingDiscount(baseTuition, siblingCount);
@@ -49,6 +98,8 @@ export class AdmissionsService {
       studentName,
       studentBirthDate,
       programKey,
+      learningMode,
+      currency,
       referralCode,
       status: "pending_payment",
       tuitionAmount
@@ -63,7 +114,9 @@ export class AdmissionsService {
         enrollmentId,
         studentName,
         parentName,
-        tuitionAmount
+        tuitionAmount,
+        currency,
+        learningMode
       }),
       status: "PENDING"
     });

@@ -10,6 +10,8 @@ import type { Session, AttendanceRecord } from "../domains/students/learning-ser
 import { AssessmentService, Assignment, Submission } from "../domains/assessment/assessment-service";
 import { IntegrationService, IntegrationLog } from "../domains/shared/services/integration-service";
 import { OracleService, AIRole } from "../domains/academy-intelligence/oracle-service";
+import { OpenDayBookingModal } from "../components/OpenDayBookingModal";
+import { FeeCalculator } from "../components/FeeCalculator";
 
 export default function Home() {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -18,7 +20,10 @@ export default function Home() {
   const [activeView, setActiveView] = useState<"landing" | "student" | "parent" | "teacher" | "executive">("landing");
   const [activeStudentMode, setActiveStudentMode] = useState<"junior" | "senior">("junior");
 
-  // Admissions Form State
+  // Admissions & UKVS State
+  const [isOpenDayModalOpen, setIsOpenDayModalOpen] = useState(false);
+  const [landingCurrency, setLandingCurrency] = useState<"NGN" | "GBP">("NGN");
+  const [learningMode, setLearningMode] = useState<"full-time" | "homeschooling" | "modular">("full-time");
   const [studentName, setStudentName] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [programKey, setProgramKey] = useState("primary");
@@ -252,7 +257,7 @@ export default function Home() {
       </div>
 
       {/* Main Header navigation */}
-      <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-lg border-b border-brand-purple/5 px-6 py-4 flex items-center justify-between shadow-sm">
+      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-brand-purple/5 px-6 py-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-brand-purple rounded-xl flex items-center justify-center text-brand-gold font-bold text-xl shadow-lg shadow-brand-purple/20 transition-all hover:rotate-6">T</div>
           <div>
@@ -260,7 +265,28 @@ export default function Home() {
             <span className="text-[9px] uppercase font-bold text-brand-gold tracking-[0.25em]">Virtual Academy</span>
           </div>
         </div>
-        <div className="flex items-center gap-4">
+
+        {/* Public Navigation Links */}
+        {activeView === "landing" && (
+          <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-neutral-600">
+            <a href="#curriculum" className="hover:text-brand-purple transition-all">Key Stages</a>
+            <a href="#pathways" className="hover:text-brand-purple transition-all">Flexible Pathways</a>
+            <a href="#calculator" className="hover:text-brand-purple transition-all">Fee Calculator</a>
+            <a href="#diaspora" className="hover:text-brand-purple transition-all">Diaspora & WA</a>
+          </div>
+        )}
+
+        <div className="flex items-center gap-3">
+          {/* Virtual Open Day Quick Button */}
+          {activeView === "landing" && (
+            <button 
+              onClick={() => setIsOpenDayModalOpen(true)}
+              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 text-xs font-extrabold bg-brand-gold text-brand-darkviolet rounded-xl hover:bg-brand-gold/90 shadow-md transition-all animate-pulse"
+            >
+              📅 Book Open Day
+            </button>
+          )}
+
           <span className="text-[10px] bg-brand-purple/5 text-brand-purple border border-brand-purple/10 px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
             {activeView} Portal
           </span>
@@ -279,7 +305,7 @@ export default function Home() {
                     <button className="px-3 py-1.5 text-xs font-bold text-brand-purple hover:text-brand-purple/80 transition-all">Sign In</button>
                   </SignInButton>
                   <SignUpButton mode="modal">
-                    <button className="px-3 py-1.5 text-xs font-bold bg-brand-purple text-brand-gold rounded-xl hover:bg-brand-purple/90 shadow-md transition-all">Register</button>
+                    <button className="px-3.5 py-1.5 text-xs font-bold bg-brand-purple text-brand-gold rounded-xl hover:bg-brand-purple/90 shadow-md transition-all">Register</button>
                   </SignUpButton>
                 </div>
               )}
@@ -301,22 +327,121 @@ export default function Home() {
         
         {/* PUBLIC LANDING VIEW */}
         {activeView === "landing" && (
-          <div className="space-y-16 animate-fadeIn">
-            {/* Hero */}
-            <section className="text-center py-16 space-y-6 max-w-3xl mx-auto">
-              <span className="inline-block bg-brand-gold/10 text-brand-gold border border-brand-gold/20 px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest">British-Inspired Online Education</span>
+          <div className="space-y-20 animate-fadeIn">
+            {/* Hero Section */}
+            <section className="text-center py-12 space-y-6 max-w-4xl mx-auto">
+              <div className="inline-flex items-center gap-2 bg-brand-purple/5 text-brand-purple border border-brand-purple/10 px-4 py-1.5 rounded-full text-[11px] font-bold tracking-wide">
+                <span>🇳🇬 West Africa & Global Diaspora Portal</span>
+                <span className="text-neutral-300">•</span>
+                <span className="text-brand-gold font-black">British Curriculum Accredited</span>
+              </div>
+              
               <h2 className="font-display text-5xl md:text-7xl font-black text-brand-darkviolet tracking-tight leading-[1.1]">
-                Joyful Learning, <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple to-[#8a2be2]">Academic Excellence.</span>
+                World-Class Online Schooling, <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple via-[#8a2be2] to-brand-gold">Built for African Excellence.</span>
               </h2>
-              <p className="text-base text-neutral-slate max-w-2xl mx-auto leading-relaxed">
-                Empowering children ages 3 to 18 to explore, learn, and grow through an immersive digital campus aligned to the official National Curriculum for England.
+              
+              <p className="text-base md:text-lg text-neutral-slate max-w-2xl mx-auto leading-relaxed font-normal">
+                Structured live online classes, flexible homeschooling backlogs, and Cambridge/Pearson IGCSE preparation—engineered for families across Nigeria, the UK, and North America.
               </p>
+
+              {/* Primary Call to Actions */}
+              <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+                <button
+                  onClick={() => setIsOpenDayModalOpen(true)}
+                  className="px-6 py-3.5 bg-gradient-to-r from-brand-purple to-[#8a2be2] text-brand-gold rounded-2xl font-extrabold text-sm shadow-xl shadow-brand-purple/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+                >
+                  <span>📅 Book Virtual Open Day</span>
+                  <span className="text-xs">➔</span>
+                </button>
+                <a
+                  href="#calculator"
+                  className="px-6 py-3.5 bg-white text-brand-purple border border-brand-purple/20 rounded-2xl font-bold text-sm shadow-sm hover:bg-neutral-50 transition-all"
+                >
+                  🧮 Estimate Tuition Fees
+                </a>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="pt-8 border-t border-neutral-200/60 grid grid-cols-2 md:grid-cols-4 gap-4 text-center max-w-3xl mx-auto">
+                <div className="bg-white/60 p-3 rounded-2xl border border-neutral-100">
+                  <span className="text-xs font-extrabold text-brand-purple block">Pearson / Cambridge</span>
+                  <span className="text-[10px] text-neutral-500">IGCSE Pathway</span>
+                </div>
+                <div className="bg-white/60 p-3 rounded-2xl border border-neutral-100">
+                  <span className="text-xs font-extrabold text-brand-purple block">Dual Timezones</span>
+                  <span className="text-[10px] text-neutral-500">WAT & GMT Sync</span>
+                </div>
+                <div className="bg-white/60 p-3 rounded-2xl border border-neutral-100">
+                  <span className="text-xs font-extrabold text-brand-purple block">Dual Currency</span>
+                  <span className="text-[10px] text-neutral-500">NGN (₦) & GBP (£)</span>
+                </div>
+                <div className="bg-white/60 p-3 rounded-2xl border border-neutral-100">
+                  <span className="text-xs font-extrabold text-brand-purple block">Live + Offline</span>
+                  <span className="text-[10px] text-neutral-500">Bandwidth Optimized</span>
+                </div>
+              </div>
             </section>
 
-            {/* Programs and Tuition */}
-            <section className="space-y-8">
-              <h3 className="font-display text-2xl font-extrabold text-brand-darkviolet text-center tracking-tight">Curriculum Program Packages</h3>
+            {/* Flexible Learning Pathways Section */}
+            <section id="pathways" className="space-y-8">
+              <div className="text-center max-w-2xl mx-auto space-y-2">
+                <span className="text-[10px] bg-brand-gold/10 text-brand-gold border border-brand-gold/20 px-3 py-1 rounded-full font-bold uppercase tracking-wider">Tailored Academic Pathways</span>
+                <h3 className="font-display text-3xl font-extrabold text-brand-darkviolet tracking-tight">Three Ways to Learn with TVA</h3>
+                <p className="text-xs text-neutral-slate">Whether your child needs a full-time school, flexible homeschooling, or extra subject mastery.</p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="bg-white p-8 rounded-3xl border border-neutral-100 shadow-premium space-y-4 hover:border-brand-purple/20 transition-all">
+                  <div className="w-12 h-12 bg-brand-purple/10 text-brand-purple rounded-2xl flex items-center justify-center text-2xl font-bold">🏫</div>
+                  <h4 className="font-display text-xl font-bold text-brand-darkviolet">Full-Time Virtual School</h4>
+                  <p className="text-xs text-neutral-slate leading-relaxed">Daily structured live classes, real-time teacher feedback, assembly, form period, and full report cards.</p>
+                  <span className="inline-block text-[10px] font-bold text-brand-purple bg-brand-purple/5 px-2.5 py-1 rounded-lg">Primary & Secondary</span>
+                </div>
+
+                <div className="bg-white p-8 rounded-3xl border border-brand-gold/30 shadow-premium space-y-4 hover:border-brand-gold transition-all relative overflow-hidden">
+                  <div className="absolute top-0 right-0 bg-brand-gold text-white text-[9px] font-bold px-3 py-1 uppercase rounded-bl-xl">Popular</div>
+                  <div className="w-12 h-12 bg-brand-gold/10 text-brand-darkviolet rounded-2xl flex items-center justify-center text-2xl font-bold">🏡</div>
+                  <h4 className="font-display text-xl font-bold text-brand-darkviolet">Flexible Homeschooling</h4>
+                  <p className="text-xs text-neutral-slate leading-relaxed">Asynchronous video lesson library, self-paced assignment milestones, and tutor drop-in office hours.</p>
+                  <span className="inline-block text-[10px] font-bold text-brand-gold bg-brand-gold/10 px-2.5 py-1 rounded-lg">Self-Paced & Asynchronous</span>
+                </div>
+
+                <div className="bg-white p-8 rounded-3xl border border-neutral-100 shadow-premium space-y-4 hover:border-brand-purple/20 transition-all">
+                  <div className="w-12 h-12 bg-purple-100 text-purple-700 rounded-2xl flex items-center justify-center text-2xl font-bold">🧪</div>
+                  <h4 className="font-display text-xl font-bold text-brand-darkviolet">Modular Subject Master</h4>
+                  <p className="text-xs text-neutral-slate leading-relaxed">Enroll in individual target subjects (e.g., Mathematics, Coding, Science) for IGCSE exam mastery.</p>
+                  <span className="inline-block text-[10px] font-bold text-purple-700 bg-purple-50 px-2.5 py-1 rounded-lg">Single Subject Add-On</span>
+                </div>
+              </div>
+            </section>
+
+            {/* Programs and Key Stages Section */}
+            <section id="curriculum" className="space-y-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                  <span className="text-[10px] bg-brand-purple/5 text-brand-purple px-3 py-1 rounded-full font-bold uppercase tracking-wider">National Curriculum for England</span>
+                  <h3 className="font-display text-3xl font-extrabold text-brand-darkviolet tracking-tight mt-1">Curriculum Key Stages</h3>
+                </div>
+                
+                {/* Landing Currency Toggle */}
+                <div className="flex items-center gap-1 bg-white border border-neutral-200 p-1 rounded-xl shadow-sm self-start">
+                  <span className="text-[10px] font-bold text-neutral-400 px-2 uppercase">Display Fee:</span>
+                  <button 
+                    onClick={() => setLandingCurrency("NGN")}
+                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${landingCurrency === "NGN" ? "bg-brand-purple text-brand-gold" : "text-neutral-600 hover:text-brand-purple"}`}
+                  >
+                    ₦ NGN
+                  </button>
+                  <button 
+                    onClick={() => setLandingCurrency("GBP")}
+                    className={`px-3 py-1 text-xs font-bold rounded-lg transition-all ${landingCurrency === "GBP" ? "bg-brand-purple text-brand-gold" : "text-neutral-600 hover:text-brand-purple"}`}
+                  >
+                    £ GBP
+                  </button>
+                </div>
+              </div>
+
               <div className="grid md:grid-cols-3 gap-8">
                 {/* EYFS */}
                 <div className="bg-white p-8 rounded-3xl border border-neutral-100 shadow-premium space-y-5 hover:scale-[1.02] hover:shadow-xl transition-all page-stack">
@@ -325,7 +450,9 @@ export default function Home() {
                   <p className="text-sm text-neutral-slate leading-relaxed">Play-centric sensory development, early literacy steps, and active social coordination.</p>
                   <div className="pt-4 border-t border-brand-purple/5 flex items-baseline justify-between">
                     <span className="text-[10px] text-neutral-400 font-bold uppercase">Tuition per term</span>
-                    <span className="text-xl font-black text-brand-purple">N600,000</span>
+                    <span className="text-xl font-black text-brand-purple">
+                      {landingCurrency === "NGN" ? "₦600,000" : "£300"}
+                    </span>
                   </div>
                 </div>
                 {/* Primary */}
@@ -336,7 +463,9 @@ export default function Home() {
                   <p className="text-sm text-neutral-slate leading-relaxed">Critical literacy, core mathematics, computing, and inquiry-led scientific modules.</p>
                   <div className="pt-4 border-t border-brand-purple/5 flex items-baseline justify-between">
                     <span className="text-[10px] text-neutral-400 font-bold uppercase">Tuition per term</span>
-                    <span className="text-xl font-black text-brand-purple">N750,000</span>
+                    <span className="text-xl font-black text-brand-purple">
+                      {landingCurrency === "NGN" ? "₦750,000" : "£375"}
+                    </span>
                   </div>
                 </div>
                 {/* Secondary */}
@@ -346,15 +475,51 @@ export default function Home() {
                   <p className="text-sm text-neutral-slate leading-relaxed">Advanced academic subject specialization preparing students for Cambridge international exams.</p>
                   <div className="pt-4 border-t border-brand-purple/5 flex items-baseline justify-between">
                     <span className="text-[10px] text-neutral-400 font-bold uppercase">Tuition per term</span>
-                    <span className="text-xl font-black text-brand-purple">N900,000</span>
+                    <span className="text-xl font-black text-brand-purple">
+                      {landingCurrency === "NGN" ? "₦900,000" : "£450"}
+                    </span>
                   </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Interactive Fee Calculator */}
+            <section id="calculator">
+              <FeeCalculator />
+            </section>
+
+            {/* Diaspora & West African Support Banner */}
+            <section id="diaspora" className="bg-gradient-to-r from-brand-darkviolet to-brand-purple text-white p-8 md:p-12 rounded-3xl shadow-xl space-y-6">
+              <div className="max-w-2xl space-y-3">
+                <span className="text-[10px] bg-brand-gold text-brand-darkviolet font-bold px-3 py-1 rounded-full uppercase tracking-wider">Cross-Border & Diaspora Ready</span>
+                <h3 className="font-display text-3xl font-extrabold text-brand-gold">Built for Nigerian & Diaspora Families</h3>
+                <p className="text-sm text-white/80 leading-relaxed">
+                  Whether living in Lagos, Abuja, London, or Toronto, TVA provides seamless multi-currency tuition billing, dual-timezone live class schedules, and WhatsApp parent notification digests.
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4 pt-4 border-t border-white/10 text-xs">
+                <div className="bg-white/10 p-4 rounded-2xl backdrop-blur-sm space-y-1">
+                  <span className="font-bold text-brand-gold block">💳 Dual Checkout</span>
+                  <span className="text-white/70">Paystack for NGN & Stripe for International GBP/USD cards.</span>
+                </div>
+                <div className="bg-white/10 p-4 rounded-2xl backdrop-blur-sm space-y-1">
+                  <span className="font-bold text-brand-gold block">📱 Parent WhatsApp Digest</span>
+                  <span className="text-white/70">Instant attendance alerts and weekly progress summaries.</span>
+                </div>
+                <div className="bg-white/10 p-4 rounded-2xl backdrop-blur-sm space-y-1">
+                  <span className="font-bold text-brand-gold block">🌍 Flexible Timezones</span>
+                  <span className="text-white/70">Live lessons in WAT with recorded archives for Diaspora zones.</span>
                 </div>
               </div>
             </section>
 
             {/* Guided Enrollment Form (Premium Glass Panel) */}
             <section className="glass-panel p-8 md:p-10 rounded-3xl max-w-xl mx-auto space-y-6">
-              <h3 className="font-display text-2xl font-extrabold text-brand-darkviolet text-center tracking-tight">Guided Registration Intake</h3>
+              <div className="text-center space-y-1">
+                <span className="text-[10px] bg-brand-purple/10 text-brand-purple px-3 py-1 rounded-full font-bold uppercase tracking-wider">Online Application</span>
+                <h3 className="font-display text-2xl font-extrabold text-brand-darkviolet tracking-tight">Guided Registration Intake</h3>
+              </div>
               {enrollmentStatus && (
                 <div className="bg-green-50 text-green-700 text-xs p-4 rounded-2xl border border-green-200 font-semibold shadow-sm">
                   🎉 {enrollmentStatus}
@@ -372,6 +537,7 @@ export default function Home() {
                     required
                   />
                 </div>
+                
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-brand-darkviolet/60 uppercase tracking-widest mb-1.5">Date of Birth</label>
@@ -396,6 +562,33 @@ export default function Home() {
                     </select>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-brand-darkviolet/60 uppercase tracking-widest mb-1.5">Learning Pathway</label>
+                    <select 
+                      value={learningMode} 
+                      onChange={(e) => setLearningMode(e.target.value as any)}
+                      className="w-full bg-white/90 border border-neutral-200 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/5 text-sm transition-all"
+                    >
+                      <option value="full-time">Full-Time Virtual</option>
+                      <option value="homeschooling">Flexible Homeschool</option>
+                      <option value="modular">Modular Subject</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-brand-darkviolet/60 uppercase tracking-widest mb-1.5">Payment Currency</label>
+                    <select 
+                      value={landingCurrency} 
+                      onChange={(e) => setLandingCurrency(e.target.value as any)}
+                      className="w-full bg-white/90 border border-neutral-200 rounded-xl px-4 py-3 focus:outline-none focus:border-brand-purple focus:ring-2 focus:ring-brand-purple/5 text-sm transition-all"
+                    >
+                      <option value="NGN">Naira (NGN ₦)</option>
+                      <option value="GBP">Pounds (GBP £)</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-bold text-brand-darkviolet/60 uppercase tracking-widest mb-1.5">Sibling Enrollees</label>
@@ -418,6 +611,7 @@ export default function Home() {
                     />
                   </div>
                 </div>
+
                 <button type="submit" className="w-full bg-brand-purple hover:bg-brand-purple/90 text-brand-gold py-3.5 rounded-xl font-bold shadow-lg shadow-brand-purple/20 transition-all hover:scale-[1.01] active:scale-[0.99] uppercase tracking-wider text-xs">
                   Calculate Tuition and Register
                 </button>
@@ -751,6 +945,12 @@ export default function Home() {
           </form>
         </div>
       )}
+
+      {/* Open Day Booking Modal */}
+      <OpenDayBookingModal 
+        isOpen={isOpenDayModalOpen} 
+        onClose={() => setIsOpenDayModalOpen(false)} 
+      />
     </div>
   );
 }

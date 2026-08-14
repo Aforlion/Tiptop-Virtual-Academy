@@ -8,6 +8,7 @@ export interface Invoice {
   parentName: string;
   studentName: string;
   amount: number;
+  currency?: "NGN" | "GBP";
   status: "PAID" | "UNPAID";
   dueDate: string;
 }
@@ -23,6 +24,7 @@ export class FinanceService {
       parentName: "Sarah Smith", // Map to mock parent name or profile relations
       studentName: inv.studentName,
       amount: Number(inv.amount),
+      currency: (inv.currency as "NGN" | "GBP") || "NGN",
       status: inv.status as "PAID" | "UNPAID",
       dueDate: inv.dueDate
     }));
@@ -33,7 +35,7 @@ export class FinanceService {
     return mapped;
   }
 
-  public static async addInvoice(parentName: string, studentName: string, amount: number): Promise<Invoice> {
+  public static async addInvoice(parentName: string, studentName: string, amount: number, currency: "NGN" | "GBP" = "NGN"): Promise<Invoice> {
     const db = await getDb();
     const newId = crypto.randomUUID();
     const dueDateStr = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
@@ -51,6 +53,7 @@ export class FinanceService {
       parentName,
       studentName,
       amount,
+      currency,
       status: "UNPAID",
       dueDate: dueDateStr
     };

@@ -117,6 +117,12 @@ export class CurriculumService {
     return baseTuition * 0.10 * discountableStudents;
   }
 
+  public static getSiblingDiscountPercent(siblingCount: number): number {
+    if (siblingCount <= 1) return 0;
+    const discountableStudents = Math.min(siblingCount - 1, 2);
+    return discountableStudents * 10;
+  }
+
   public static calculateReferralDiscount(baseTuition: number, referralCount: number): number {
     // 5% off the tuition of the referrals child
     return baseTuition * 0.05 * referralCount;
