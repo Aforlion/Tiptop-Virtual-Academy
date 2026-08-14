@@ -246,52 +246,42 @@ export default function Home() {
       {/* Premium Gradient Top Arc (Open Book Motif) */}
       <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-brand-purple/15 via-brand-purple/5 to-transparent -z-10 book-curve-top"></div>
 
-      {/* Floating Developer Switcher Controller (Glassmorphic) */}
-      <div className="fixed bottom-4 right-4 z-50 bg-white/80 backdrop-blur-lg border border-brand-purple/10 p-4 rounded-3xl shadow-premium flex flex-col gap-2 max-w-xs transition-all hover:scale-[1.02]">
-        <span className="text-[10px] font-bold text-brand-purple/60 uppercase tracking-widest">Digital Sandbox Manager</span>
-        <div className="grid grid-cols-2 gap-2">
-          <button onClick={() => { setActiveView("landing"); }} className={`px-3 py-2 text-xs font-semibold rounded-xl transition-all ${activeView === "landing" ? "bg-brand-purple text-brand-gold shadow-md" : "bg-neutral-100/60 hover:bg-neutral-200/60"}`}>Landing</button>
-          <button onClick={() => { setActiveView("student"); }} className={`px-3 py-2 text-xs font-semibold rounded-xl transition-all ${activeView === "student" ? "bg-brand-purple text-brand-gold shadow-md" : "bg-neutral-100/60 hover:bg-neutral-200/60"}`}>Student</button>
-          <button onClick={() => { setActiveView("parent"); }} className={`px-3 py-2 text-xs font-semibold rounded-xl transition-all ${activeView === "parent" ? "bg-brand-purple text-brand-gold shadow-md" : "bg-neutral-100/60 hover:bg-neutral-200/60"}`}>Parent</button>
-          <button onClick={() => { setActiveView("teacher"); }} className={`px-3 py-2 text-xs font-semibold rounded-xl transition-all ${activeView === "teacher" ? "bg-brand-purple text-brand-gold shadow-md" : "bg-neutral-100/60 hover:bg-neutral-200/60"}`}>Teacher</button>
-          <button onClick={() => { setActiveView("executive"); }} className={`px-3 py-2 text-xs font-semibold rounded-xl transition-all ${activeView === "executive" ? "bg-brand-purple text-brand-gold shadow-md animate-pulse" : "bg-neutral-100/60 hover:bg-neutral-200/60"}`}>Executive</button>
-        </div>
-      </div>
-
       {/* Main Header navigation */}
-      <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-brand-purple/5 px-6 py-4 flex items-center justify-between shadow-sm">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-brand-purple rounded-xl flex items-center justify-center text-brand-gold font-bold text-xl shadow-lg shadow-brand-purple/20 transition-all hover:rotate-6">T</div>
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-brand-purple/10 px-6 py-3.5 flex items-center justify-between shadow-sm">
+        <div className="flex items-center gap-3.5">
+          <img 
+            src="/logo.jpeg" 
+            alt="Tiptop Virtual Academy Logo" 
+            className="w-12 h-12 object-contain rounded-xl shadow-sm border border-neutral-100/80" 
+          />
           <div>
-            <h1 className="font-display font-extrabold text-lg text-brand-darkviolet leading-none tracking-tight">TIPTOP</h1>
-            <span className="text-[9px] uppercase font-bold text-brand-gold tracking-[0.25em]">Virtual Academy</span>
+            <div className="flex items-center gap-2">
+              <h1 className="font-display font-black text-lg text-brand-darkviolet leading-none tracking-tight">TIPTOP</h1>
+              <span className="text-[10px] uppercase font-bold text-brand-gold tracking-[0.2em] bg-brand-purple/5 px-2 py-0.5 rounded-full border border-brand-purple/10">VIRTUAL ACADEMY</span>
+            </div>
+            <span className="text-[10px] italic text-neutral-500 font-medium block mt-0.5">Tiptop mind Tiptop future.</span>
           </div>
         </div>
 
         {/* Public Navigation Links */}
-        {activeView === "landing" && (
-          <div className="hidden lg:flex items-center gap-6 text-xs font-bold text-neutral-600">
-            <a href="#curriculum" className="hover:text-brand-purple transition-all">Key Stages</a>
-            <a href="#pathways" className="hover:text-brand-purple transition-all">Flexible Pathways</a>
-            <a href="#calculator" className="hover:text-brand-purple transition-all">Fee Calculator</a>
-            <a href="#diaspora" className="hover:text-brand-purple transition-all">Diaspora & WA</a>
-          </div>
-        )}
+        <div className="hidden lg:flex items-center gap-8 text-xs font-bold text-neutral-600">
+          <button onClick={() => setActiveView("landing")} className={`hover:text-brand-purple transition-all ${activeView === "landing" ? "text-brand-purple font-extrabold border-b-2 border-brand-purple pb-1" : ""}`}>Public Academy</button>
+          <button onClick={() => setActiveView("student")} className={`hover:text-brand-purple transition-all ${activeView === "student" ? "text-brand-purple font-extrabold border-b-2 border-brand-purple pb-1" : ""}`}>Student Portal</button>
+          <button onClick={() => setActiveView("parent")} className={`hover:text-brand-purple transition-all ${activeView === "parent" ? "text-brand-purple font-extrabold border-b-2 border-brand-purple pb-1" : ""}`}>Parent Portal</button>
+          <button onClick={() => setActiveView("teacher")} className={`hover:text-brand-purple transition-all ${activeView === "teacher" ? "text-brand-purple font-extrabold border-b-2 border-brand-purple pb-1" : ""}`}>Educator Hub</button>
+          <button onClick={() => setActiveView("executive")} className={`hover:text-brand-purple transition-all ${activeView === "executive" ? "text-brand-purple font-extrabold border-b-2 border-brand-purple pb-1" : ""}`}>Administration</button>
+        </div>
 
         <div className="flex items-center gap-3">
-          {/* Virtual Open Day Quick Button */}
+          {/* Executive Admissions Quick Button */}
           {activeView === "landing" && (
             <button 
               onClick={() => setIsOpenDayModalOpen(true)}
-              className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 text-xs font-extrabold bg-brand-gold text-brand-darkviolet rounded-xl hover:bg-brand-gold/90 shadow-md transition-all animate-pulse"
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2.5 text-xs font-extrabold bg-gradient-to-r from-brand-gold to-amber-500 text-brand-darkviolet rounded-xl hover:shadow-lg transition-all active:scale-95 shadow-sm"
             >
-              📅 Book Open Day
+              📅 Schedule Consultation
             </button>
           )}
-
-          <span className="text-[10px] bg-brand-purple/5 text-brand-purple border border-brand-purple/10 px-3 py-1.5 rounded-full font-bold uppercase tracking-wider">
-            {activeView} Portal
-          </span>
 
           {/* Clerk Auth Integration */}
           {isLoaded && (
@@ -304,10 +294,10 @@ export default function Home() {
               ) : (
                 <div className="flex items-center gap-2">
                   <SignInButton mode="modal">
-                    <button className="px-3 py-1.5 text-xs font-bold text-brand-purple hover:text-brand-purple/80 transition-all">Sign In</button>
+                    <button className="px-3.5 py-2 text-xs font-bold text-brand-purple hover:text-brand-purple/80 transition-all">Sign In</button>
                   </SignInButton>
                   <SignUpButton mode="modal">
-                    <button className="px-3.5 py-1.5 text-xs font-bold bg-brand-purple text-brand-gold rounded-xl hover:bg-brand-purple/90 shadow-md transition-all">Register</button>
+                    <button className="px-4 py-2 text-xs font-bold bg-brand-purple text-brand-gold rounded-xl hover:bg-brand-purple/90 shadow-md transition-all">Enroll Child</button>
                   </SignUpButton>
                 </div>
               )}
@@ -330,57 +320,64 @@ export default function Home() {
         {/* PUBLIC LANDING VIEW */}
         {activeView === "landing" && (
           <div className="space-y-20 animate-fadeIn">
-            {/* Hero Section */}
-            <section className="text-center py-12 space-y-6 max-w-4xl mx-auto">
-              <div className="inline-flex items-center gap-2 bg-brand-purple/5 text-brand-purple border border-brand-purple/10 px-4 py-1.5 rounded-full text-[11px] font-bold tracking-wide">
-                <span>🇳🇬 West Africa & Global Diaspora Portal</span>
-                <span className="text-neutral-300">•</span>
-                <span className="text-brand-gold font-black">British Curriculum Accredited</span>
+            {/* Hero Section with Official Logo Crest */}
+            <section className="text-center py-10 space-y-6 max-w-4xl mx-auto">
+              <div className="flex flex-col items-center justify-center space-y-3">
+                <img 
+                  src="/logo.jpeg" 
+                  alt="Tiptop Virtual Academy Crest" 
+                  className="w-28 h-28 object-contain drop-shadow-xl hover:scale-105 transition-all duration-300"
+                />
+                <div className="inline-flex items-center gap-2 bg-brand-purple/5 text-brand-purple border border-brand-purple/10 px-4 py-1.5 rounded-full text-[11px] font-bold tracking-wide">
+                  <span>🇳🇬 West Africa & Global Diaspora Academy</span>
+                  <span className="text-neutral-300">•</span>
+                  <span className="text-brand-gold font-black">Official British Curriculum</span>
+                </div>
               </div>
               
               <h2 className="font-display text-5xl md:text-7xl font-black text-brand-darkviolet tracking-tight leading-[1.1]">
-                World-Class Online Schooling, <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple via-[#8a2be2] to-brand-gold">Built for African Excellence.</span>
+                Empowering Africa's Future Leaders, <br />
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-purple via-[#8a2be2] to-brand-gold">With a World-Class Education.</span>
               </h2>
               
               <p className="text-base md:text-lg text-neutral-slate max-w-2xl mx-auto leading-relaxed font-normal">
-                Structured live online classes, flexible homeschooling backlogs, and Cambridge/Pearson IGCSE preparation—engineered for families across Nigeria, the UK, and North America.
+                Structured live online schooling, flexible homeschooling pathways, and Cambridge/Pearson IGCSE preparation—built on our core foundation: <strong className="text-brand-purple font-semibold">"Tiptop mind Tiptop future."</strong>
               </p>
 
               {/* Primary Call to Actions */}
               <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
                 <button
                   onClick={() => setIsOpenDayModalOpen(true)}
-                  className="px-6 py-3.5 bg-gradient-to-r from-brand-purple to-[#8a2be2] text-brand-gold rounded-2xl font-extrabold text-sm shadow-xl shadow-brand-purple/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+                  className="px-7 py-4 bg-gradient-to-r from-brand-purple to-[#8a2be2] text-brand-gold rounded-2xl font-extrabold text-sm shadow-xl shadow-brand-purple/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
                 >
-                  <span>📅 Book Virtual Open Day</span>
+                  <span>📅 Schedule Executive Consultation</span>
                   <span className="text-xs">➔</span>
                 </button>
                 <a
                   href="#calculator"
-                  className="px-6 py-3.5 bg-white text-brand-purple border border-brand-purple/20 rounded-2xl font-bold text-sm shadow-sm hover:bg-neutral-50 transition-all"
+                  className="px-7 py-4 bg-white text-brand-purple border border-brand-purple/20 rounded-2xl font-bold text-sm shadow-sm hover:bg-neutral-50 transition-all"
                 >
-                  🧮 Estimate Tuition Fees
+                  🧮 Tuition & Fees Calculator
                 </a>
               </div>
 
               {/* Trust Indicators */}
               <div className="pt-8 border-t border-neutral-200/60 grid grid-cols-2 md:grid-cols-4 gap-4 text-center max-w-3xl mx-auto">
-                <div className="bg-white/60 p-3 rounded-2xl border border-neutral-100">
+                <div className="bg-white/80 p-4 rounded-2xl border border-neutral-100 shadow-sm">
                   <span className="text-xs font-extrabold text-brand-purple block">Pearson / Cambridge</span>
-                  <span className="text-[10px] text-neutral-500">IGCSE Pathway</span>
+                  <span className="text-[10px] text-neutral-500 font-medium">IGCSE Exam Pathway</span>
                 </div>
-                <div className="bg-white/60 p-3 rounded-2xl border border-neutral-100">
+                <div className="bg-white/80 p-4 rounded-2xl border border-neutral-100 shadow-sm">
                   <span className="text-xs font-extrabold text-brand-purple block">Dual Timezones</span>
-                  <span className="text-[10px] text-neutral-500">WAT & GMT Sync</span>
+                  <span className="text-[10px] text-neutral-500 font-medium">WAT & GMT Synchronized</span>
                 </div>
-                <div className="bg-white/60 p-3 rounded-2xl border border-neutral-100">
+                <div className="bg-white/80 p-4 rounded-2xl border border-neutral-100 shadow-sm">
                   <span className="text-xs font-extrabold text-brand-purple block">Dual Currency</span>
-                  <span className="text-[10px] text-neutral-500">NGN (₦) & GBP (£)</span>
+                  <span className="text-[10px] text-neutral-500 font-medium">Naira (₦) & GBP (£) Cards</span>
                 </div>
-                <div className="bg-white/60 p-3 rounded-2xl border border-neutral-100">
-                  <span className="text-xs font-extrabold text-brand-purple block">Live + Offline</span>
-                  <span className="text-[10px] text-neutral-500">Bandwidth Optimized</span>
+                <div className="bg-white/80 p-4 rounded-2xl border border-neutral-100 shadow-sm">
+                  <span className="text-xs font-extrabold text-brand-purple block">Parent Telemetry</span>
+                  <span className="text-[10px] text-neutral-500 font-medium">WhatsApp Progress Alerts</span>
                 </div>
               </div>
             </section>
@@ -904,8 +901,64 @@ export default function Home() {
             </div>
           </div>
         )}
-
       </main>
+
+      {/* Production Footer Section */}
+      <footer className="bg-brand-darkviolet text-white py-12 px-6 border-t border-brand-gold/20 mt-16">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-8">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <img src="/logo.jpeg" alt="Tiptop Virtual Academy Logo" className="w-12 h-12 object-contain bg-white rounded-xl p-1" />
+              <div>
+                <h4 className="font-display font-black text-lg text-brand-gold">TIPTOP VIRTUAL ACADEMY</h4>
+                <span className="text-[10px] italic text-white/70">Tiptop mind Tiptop future.</span>
+              </div>
+            </div>
+            <p className="text-xs text-white/70 leading-relaxed">
+              Empowering children ages 3 to 18 across Nigeria and the global African Diaspora with a world-class British National Curriculum education.
+            </p>
+          </div>
+
+          <div>
+            <h5 className="font-display font-bold text-sm text-brand-gold uppercase tracking-wider mb-3">Academic Key Stages</h5>
+            <ul className="space-y-2 text-xs text-white/80">
+              <li>Early Years Foundation (EYFS)</li>
+              <li>Primary Years (KS1 & KS2)</li>
+              <li>Secondary Years (KS3)</li>
+              <li>Cambridge & Pearson IGCSE (KS4)</li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 className="font-display font-bold text-sm text-brand-gold uppercase tracking-wider mb-3">Flexible Pathways</h5>
+            <ul className="space-y-2 text-xs text-white/80">
+              <li>Full-Time Virtual School</li>
+              <li>Flexible Homeschooling Library</li>
+              <li>Modular Single Subject Add-ons</li>
+              <li>IGCSE Exam Preparation Drills</li>
+            </ul>
+          </div>
+
+          <div>
+            <h5 className="font-display font-bold text-sm text-brand-gold uppercase tracking-wider mb-3">Admissions & Contact</h5>
+            <ul className="space-y-2 text-xs text-white/80">
+              <li>📍 Lagos | Abuja | London</li>
+              <li>📧 admissions@tiptopacademy.co.uk</li>
+              <li>📱 WhatsApp Admissions Hotline</li>
+              <li>💳 Dual Currency Settlement (NGN / GBP)</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto pt-8 mt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between text-[11px] text-white/50 gap-4">
+          <span>© {new Date().getFullYear()} Tiptop Virtual Academy. All rights reserved. "Tiptop mind Tiptop future." is a registered trademark.</span>
+          <div className="flex gap-4">
+            <a href="#curriculum" className="hover:text-brand-gold transition-all">Privacy Policy</a>
+            <a href="#curriculum" className="hover:text-brand-gold transition-all">Terms of Service</a>
+            <a href="#curriculum" className="hover:text-brand-gold transition-all">Safeguarding Policy</a>
+          </div>
+        </div>
+      </footer>
 
       {/* AI Assistant Chat Drawer Overlay (Glassmorphism Modal) */}
       {isChatOpen && (

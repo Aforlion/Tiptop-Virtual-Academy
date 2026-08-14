@@ -44,13 +44,17 @@ export function OpenDayBookingModal({ isOpen, onClose }: OpenDayBookingModalProp
         <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-brand-purple via-brand-gold to-[#8a2be2]"></div>
         
         <div className="flex items-center justify-between">
-          <div>
-            <span className="text-[10px] bg-brand-gold/10 text-brand-gold border border-brand-gold/20 px-3 py-1 rounded-full font-bold uppercase tracking-wider">Virtual Open Day & Live Taster</span>
-            <h3 className="font-display text-2xl font-extrabold text-brand-darkviolet mt-2">Book a Live Class Tour</h3>
+          <div className="flex items-center gap-3">
+            <img src="/logo.jpeg" alt="Tiptop Virtual Academy Logo" className="w-12 h-12 object-contain rounded-xl shadow-sm border border-neutral-100" />
+            <div>
+              <span className="text-[10px] bg-brand-gold/10 text-brand-gold border border-brand-gold/20 px-3 py-0.5 rounded-full font-bold uppercase tracking-wider block w-fit">Admissions Consultation</span>
+              <h3 className="font-display text-xl font-extrabold text-brand-darkviolet mt-0.5">Book a Live Class Tour</h3>
+              <span className="text-[9px] italic text-neutral-400 font-medium">Tiptop mind Tiptop future.</span>
+            </div>
           </div>
           <button 
             onClick={onClose}
-            className="w-9 h-9 bg-neutral-100 hover:bg-neutral-200 text-neutral-500 rounded-full flex items-center justify-center font-bold text-lg transition-all"
+            className="w-8 h-8 bg-neutral-100 hover:bg-neutral-200 text-neutral-500 rounded-full flex items-center justify-center font-bold text-base transition-all"
           >
             ✕
           </button>

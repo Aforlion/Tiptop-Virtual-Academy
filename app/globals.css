@@ -4,11 +4,11 @@
   --font-sans: var(--font-inter), sans-serif;
   --font-display: var(--font-outfit), sans-serif;
   
-  --color-brand-purple: hsl(270, 70%, 40%);
-  --color-brand-gold: hsl(45, 100%, 50%);
-  --color-brand-lavender: hsl(268, 80%, 94%);
-  --color-brand-darkviolet: hsl(273, 85%, 15%);
-  --color-neutral-warmwhite: hsl(36, 33%, 98%);
+  --color-brand-purple: #3d0c75;
+  --color-brand-gold: #f59e0b;
+  --color-brand-lavender: #f3e8ff;
+  --color-brand-darkviolet: #25064c;
+  --color-neutral-warmwhite: #faf9f6;
   
   --shadow-premium: 0 10px 30px -10px rgba(39, 0, 77, 0.08), 0 1px 3px rgba(39, 0, 77, 0.02);
   --shadow-glass: inset 0 1px 1px rgba(255, 255, 255, 0.4), 0 8px 32px 0 rgba(39, 0, 77, 0.04);
