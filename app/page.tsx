@@ -12,6 +12,8 @@ import { IntegrationService, IntegrationLog } from "../domains/shared/services/i
 import { OracleService, AIRole } from "../domains/academy-intelligence/oracle-service";
 import { OpenDayBookingModal } from "../components/OpenDayBookingModal";
 import { FeeCalculator } from "../components/FeeCalculator";
+import { TimetableGrid } from "../components/TimetableGrid";
+import { ModularSubjectPicker } from "../components/ModularSubjectPicker";
 
 export default function Home() {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -642,6 +644,9 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Interactive Live Timetable & Dual Timezone Sync Grid */}
+            <TimetableGrid />
+
             {/* Dashboard grids */}
             <div className="grid md:grid-cols-3 gap-8">
               
@@ -726,7 +731,17 @@ export default function Home() {
         {/* PARENT VIEW */}
         {activeView === "parent" && (
           <div className="space-y-8 animate-fadeIn">
-            <h3 className="font-display text-2xl font-bold text-brand-darkviolet">Parent Portal Dashboard</h3>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-display text-2xl font-bold text-brand-darkviolet">Parent Portal Dashboard</h3>
+                <p className="text-xs text-neutral-slate">Oversee your child's progress, tuition accounts, and live class attendance.</p>
+              </div>
+
+              <div className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-4 py-2 rounded-2xl text-xs font-bold flex items-center gap-2">
+                <span>📱 WhatsApp Alerts: <strong className="text-emerald-900">Active (+234...)</strong></span>
+              </div>
+            </div>
+
             <div className="grid md:grid-cols-3 gap-8">
               
               {/* Children Status */}
@@ -750,6 +765,9 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
+
+                {/* Modular Subject Picker for Parents */}
+                <ModularSubjectPicker />
               </div>
 
               {/* Finance Ledgers & Stripe trigger */}

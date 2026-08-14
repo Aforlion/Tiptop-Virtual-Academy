@@ -50,11 +50,21 @@ export class IntegrationService {
         newLog.message = `Successfully sync'd student: ${data.studentName}. Directory account provisioned, Google Classroom membership updated.`;
       } else if (eventType === "session.scheduled") {
         newLog.message = `Successfully sync'd session. Google Calendar event created, Meet link generated: ${data.meetUrl}`;
+      } else if (eventType === "whatsapp.alert") {
+        newLog.message = `📱 WhatsApp alert delivered to parent (${data.phone || "registered contact"}): "${data.message}"`;
       } else {
         newLog.message = `Completed integration sync for ${eventType}.`;
       }
     }, 1500);
 
     return newLog;
+  }
+
+  public static notifyParentWhatsApp(studentName: string, eventMsg: string, phone: string = "+2348000000000"): IntegrationLog {
+    return this.triggerSync("whatsapp.alert", {
+      studentName,
+      message: eventMsg,
+      phone
+    });
   }
 }
