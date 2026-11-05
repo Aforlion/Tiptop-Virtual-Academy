@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+:root {
+  --background: #F8FAFC;
+  --foreground: #0F172A;
+  --tva-navy-primary: #0F172A;
+  --tva-navy-deep: #090D16;
+  --tva-navy-card: #1E293B;
+  --tva-cream-bg: #F8FAFC;
+  --tva-surface: #FFFFFF;
+  --tva-border: #E2E8F0;
+  --tva-amber: #F59E0B;
+  --tva-amber-hover: #D97706;
+  --tva-emerald: #10B981;
+  --tva-indigo: #6366F1;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-tva-navy: var(--tva-navy-primary);
+  --color-tva-deep: var(--tva-navy-deep);
+  --color-tva-card: var(--tva-navy-card);
+  --color-tva-cream: var(--tva-cream-bg);
+  --color-tva-surface: var(--tva-surface);
+  --color-tva-border: var(--tva-border);
+  --color-tva-amber: var(--tva-amber);
+  --color-tva-amber-hover: var(--tva-amber-hover);
+  --color-tva-emerald: var(--tva-emerald);
+  --color-tva-indigo: var(--tva-indigo);
+  --font-heading: 'Outfit', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--tva-cream-bg);
+  color: var(--tva-navy-primary);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.glass-dark {
+  background: rgba(15, 23, 42, 0.92);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(51, 65, 85, 0.6);
+}
