@@ -56,3 +56,25 @@ export interface AdmissionFormData {
   notes?: string;
 }
 
+export interface AdmissionApplication {
+  id: string;
+  created_at: string;
+  parent_name: string;
+  parent_email: string;
+  parent_phone?: string;
+  parent_country?: string;
+  student_first_name: string;
+  student_last_name: string;
+  student_date_of_birth: string;
+  key_stage_code: string;
+  delivery_format: 'live' | 'on-demand' | 'bundle';
+  selected_subjects: string[];
+  deposit_amount: number;
+  currency: Currency | string;
+  paystack_reference?: string;
+  payment_status: 'pending' | 'deposit_paid' | 'failed' | 'refunded';
+  status: 'inquiry' | 'under_review' | 'admitted' | 'enrolled' | 'rejected' | 'withdrawn';
+  admin_notes?: string;
+}
+
+

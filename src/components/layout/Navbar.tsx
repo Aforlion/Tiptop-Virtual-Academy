@@ -76,6 +76,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmissions, onOpenPortals 
 
             {/* Action CTA Buttons */}
             <div className="hidden lg:flex items-center gap-3">
+              <a
+                href="/admin/admissions"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-lg transition-all"
+              >
+                <span>Admin Hub</span>
+              </a>
               <button
                 onClick={onOpenPortals}
                 className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-all"
@@ -150,6 +156,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmissions, onOpenPortals 
               Frequently Asked Questions
             </a>
             <div className="pt-3 border-t border-slate-100 space-y-2">
+              <a
+                href="/admin/admissions"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full flex items-center justify-center gap-2 py-2 text-xs font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded-lg"
+              >
+                Admin Registry Console
+              </a>
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);

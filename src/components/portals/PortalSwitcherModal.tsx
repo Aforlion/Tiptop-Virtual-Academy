@@ -212,9 +212,18 @@ export const PortalSwitcherModal: React.FC<PortalSwitcherModalProps> = ({ isOpen
                     Active Cohort: Year 5 Mathematics (11 of 12 seats filled)
                   </p>
                 </div>
-                <button className="px-4 py-2 text-xs font-bold text-white bg-slate-900 rounded-xl hover:bg-slate-800">
-                  Save Attendance (30 Seconds)
-                </button>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="/admin/admissions"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-amber-900 bg-amber-400 hover:bg-amber-300 rounded-xl transition-all shadow-xs"
+                  >
+                    <span>Open Admin Registry Hub</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </a>
+                  <button className="px-3.5 py-2 text-xs font-bold text-white bg-slate-900 rounded-xl hover:bg-slate-800">
+                    Save Attendance
+                  </button>
+                </div>
               </div>
 
               <div className="border border-slate-200 rounded-2xl overflow-hidden">
