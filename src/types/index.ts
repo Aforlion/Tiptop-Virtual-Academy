@@ -77,4 +77,44 @@ export interface AdmissionApplication {
   admin_notes?: string;
 }
 
+export interface LearningResource {
+  id: string;
+  key_stage_code: string;
+  subject_code: string;
+  title: string;
+  description?: string;
+  resource_type: 'video' | 'slides' | 'worksheet' | 'curriculum_guide';
+  file_url: string;
+  week_number?: number;
+  term_number?: number;
+  academic_year?: string;
+  is_published: boolean;
+  created_at: string;
+}
+
+export interface StudentTimetableSession {
+  id: string;
+  subject_code: string;
+  subject_name: string;
+  teacher_name: string;
+  start_time: string;
+  end_time: string;
+  room_url: string;
+  cohort_name: string;
+  status: 'live_now' | 'upcoming' | 'completed';
+}
+
+export interface ParentInvoice {
+  id: string;
+  title: string;
+  amount: number;
+  currency: string;
+  status: 'paid' | 'pending' | 'overdue';
+  due_date: string;
+  paid_at?: string;
+  paystack_reference?: string;
+  term_period: string;
+}
+
+
 

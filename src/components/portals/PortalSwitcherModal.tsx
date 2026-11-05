@@ -85,9 +85,23 @@ export const PortalSwitcherModal: React.FC<PortalSwitcherModalProps> = ({ isOpen
                     Your next live class starts in 14 minutes.
                   </p>
                 </div>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs shadow-xs">
-                  <Video className="w-4 h-4" />
-                  <span>Launch Live Classroom (Google Meet)</span>
+                <div className="flex items-center gap-2">
+                  <a
+                    href="/portal/student"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-xs transition-colors"
+                  >
+                    <span>Full Student Hub</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </a>
+                  <a
+                    href="https://meet.google.com"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-xs transition-colors"
+                  >
+                    <Video className="w-4 h-4" />
+                    <span>Launch Room</span>
+                  </a>
                 </div>
               </div>
 
@@ -155,10 +169,19 @@ export const PortalSwitcherModal: React.FC<PortalSwitcherModalProps> = ({ isOpen
                     Tracking 1 enrolled learner (David Adeyemi — Year 5)
                   </p>
                 </div>
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                  Tuition Active via Paystack
-                </span>
+                <div className="flex flex-wrap items-center gap-2">
+                  <a
+                    href="/portal/parent"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-xs transition-colors"
+                  >
+                    <span>Full Parent Center</span>
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  </a>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    Tuition Active via Paystack
+                  </span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
