@@ -8,11 +8,14 @@
     "start": "next start"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.119.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^1.16.0",
     "next": "16.4.5",
+    "pg": "^8.23.1",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "lucide-react": "^1.16.0",
-    "clsx": "^2.1.1",
     "tailwind-merge": "^3.0.2"
   },
   "devDependencies": {

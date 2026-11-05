@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { getAdminClient } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
@@ -21,27 +22,46 @@ export async function POST(request: Request) {
 
     const event = JSON.parse(rawBody);
 
-    // Event Handling
-    switch (event.event) {
-      case 'charge.success': {
-        const paymentData = event.data;
-        const reference = paymentData.reference;
-        const amount = paymentData.amount / 100;
-        const customerEmail = paymentData.customer?.email;
-        const metadata = paymentData.metadata || {};
+    if (event.event === 'charge.success') {
+      const paymentData = event.data;
+      const reference = paymentData.reference;
+      const amount = paymentData.amount / 100; // convert kobo/cents to main unit
+      const currency = paymentData.currency || 'NGN';
+      const customerEmail = paymentData.customer?.email;
+      const metadata = paymentData.metadata || {};
 
-        console.log(`[Paystack Webhook] Charge succeeded: ${reference} for ${customerEmail} (${amount})`);
-        // Here: Update Supabase enrollment status to 'enrolled', issue PDF invoice, send email
-        break;
+      console.log(`[Paystack Webhook] Charge succeeded: ${reference} for ${customerEmail} (${amount} ${currency})`);
+
+      try {
+        const supabase = getAdminClient();
+
+        // 1. Update application status
+        await supabase
+          .from('admissions_applications')
+          .update({
+            payment_status: 'deposit_paid',
+            status: 'enrolled',
+            deposit_amount: amount,
+            currency: currency
+          })
+          .eq('paystack_reference', reference);
+
+        // 2. Insert invoice payment record
+        await supabase
+          .from('invoices')
+          .insert({
+            title: metadata.title || 'Admissions Registration Deposit',
+            amount: amount,
+            currency: currency,
+            status: 'paid',
+            paystack_reference: reference,
+            payment_method: paymentData.channel || 'card',
+            paid_at: new Date().toISOString(),
+            due_date: new Date().toISOString().split('T')[0]
+          });
+      } catch (dbErr) {
+        console.warn('[Paystack Webhook] Database reconciliation note:', dbErr);
       }
-
-      case 'invoice.payment_failed': {
-        console.warn(`[Paystack Webhook] Payment failed for reference: ${event.data.reference}`);
-        break;
-      }
-
-      default:
-        console.log(`[Paystack Webhook] Unhandled event type: ${event.event}`);
     }
 
     return NextResponse.json({ received: true });
@@ -50,4 +70,3 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 }
-

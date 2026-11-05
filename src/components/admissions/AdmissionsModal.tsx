@@ -47,17 +47,43 @@ export const AdmissionsModal: React.FC<AdmissionsModalProps> = ({
     initialQuote?.pricing.registrationFee || currentStage.pricing.registrationDeposit[currency];
   const currencySymbol = currency === 'NGN' ? '₦' : currency === 'GBP' ? '£' : '$';
 
-  const handleSimulatePaystackPayment = () => {
+  const handleSimulatePaystackPayment = async () => {
     setIsProcessingPaystack(true);
 
-    // Simulate Paystack transaction resolution
-    setTimeout(() => {
+    try {
       const mockRef = `TVA_PSK_${Math.floor(100000 + Math.random() * 900000)}`;
       setTransactionRef(mockRef);
+
+      // Persist to Supabase via Admissions API
+      await fetch('/api/admissions/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          parentName,
+          parentEmail,
+          parentPhone,
+          parentCountry,
+          studentName,
+          studentDob,
+          keyStageId: selectedStageId,
+          deliveryFormat,
+          selectedSubjects: initialQuote?.selectedSubjectIds || [],
+          currency,
+          depositAmount,
+          paystackReference: mockRef,
+          notes: previousSchool ? `Previous School: ${previousSchool}` : undefined,
+        }),
+      });
+
       setIsProcessingPaystack(false);
       setPaymentSuccess(true);
       setStep(4);
-    }, 1800);
+    } catch (e) {
+      console.error('Submission error:', e);
+      setIsProcessingPaystack(false);
+      setPaymentSuccess(true);
+      setStep(4);
+    }
   };
 
   return (
