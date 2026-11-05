@@ -1,9 +1,8 @@
 -- ==============================================================================
 -- TIPTOP VIRTUAL ACADEMY (TVA 2.0) - MASTER SCHEMA MIGRATION & CLEANUP
 -- ==============================================================================
--- 1. DROP OBSOLETE & UNUSED V1 TABLES (Bloat, legacy credits & gamification)
--- ==============================================================================
 
+-- 1. DROP OBSOLETE & UNUSED V1 TABLES (Bloat, legacy credits & gamification)
 DROP TABLE IF EXISTS student_challenges CASCADE;
 DROP TABLE IF EXISTS challenges CASCADE;
 DROP TABLE IF EXISTS student_xp_transactions CASCADE;
@@ -21,7 +20,6 @@ DROP TABLE IF EXISTS chat_messages CASCADE;
 -- ==============================================================================
 -- 2. ENHANCE CORE ADMISSIONS TABLE FOR DIRECT PAYSTACK ONBOARDING
 -- ==============================================================================
-
 ALTER TABLE IF EXISTS admissions_applications
   ALTER COLUMN parent_profile_id DROP NOT NULL,
   ADD COLUMN IF NOT EXISTS parent_name text,
@@ -43,7 +41,6 @@ CREATE INDEX IF NOT EXISTS idx_admissions_parent_email ON admissions_application
 -- ==============================================================================
 -- 3. ENHANCE INVOICES FOR MULTI-CURRENCY PAYSTACK RECONCILIATION
 -- ==============================================================================
-
 ALTER TABLE IF EXISTS invoices
   ADD COLUMN IF NOT EXISTS title text,
   ADD COLUMN IF NOT EXISTS currency text DEFAULT 'NGN',
@@ -58,7 +55,6 @@ CREATE INDEX IF NOT EXISTS idx_invoices_parent ON invoices(parent_id);
 -- ==============================================================================
 -- 4. CREATE CENTRALIZED RESOURCE VAULT (Slides, Recordings, Worksheets)
 -- ==============================================================================
-
 CREATE TABLE IF NOT EXISTS resource_vault (
   id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
   key_stage_code text NOT NULL,
@@ -78,34 +74,46 @@ CREATE TABLE IF NOT EXISTS resource_vault (
 CREATE INDEX IF NOT EXISTS idx_resource_vault_stage_subject ON resource_vault(key_stage_code, subject_code);
 
 -- ==============================================================================
--- 5. SEED NIGERIAN CURRICULUM SUBJECTS (If not already present)
+-- 5. UPDATE CATEGORY CONSTRAINT & SEED NIGERIAN CURRICULUM SUBJECTS
 -- ==============================================================================
+ALTER TABLE IF EXISTS curriculum_subjects 
+  DROP CONSTRAINT IF EXISTS curriculum_subjects_category_check;
+
+ALTER TABLE IF EXISTS curriculum_subjects 
+  ADD CONSTRAINT curriculum_subjects_category_check 
+  CHECK (category IN ('core', 'foundation', 'elective', 'nigerian'));
 
 INSERT INTO curriculum_subjects (code, name, description, category)
-VALUES 
-  ('NIG-SOC', 'Nigerian Social Studies & Civic Education', 'Civic rights, Nigerian constitution, values, and community heritage', 'nigerian'),
-  ('NIG-HIST', 'Nigerian History & Cultural Studies', 'Pre-colonial empires, post-independence history, and cultural heritage', 'nigerian')
-ON CONFLICT (code) DO NOTHING;
+SELECT 'NIG-SOC', 'Nigerian Social Studies & Civic Education', 'Civic rights, Nigerian constitution, values, and community heritage', 'nigerian'
+WHERE NOT EXISTS (SELECT 1 FROM curriculum_subjects WHERE code = 'NIG-SOC');
+
+INSERT INTO curriculum_subjects (code, name, description, category)
+SELECT 'NIG-HIST', 'Nigerian History & Cultural Studies', 'Pre-colonial empires, post-independence history, and cultural heritage', 'nigerian'
+WHERE NOT EXISTS (SELECT 1 FROM curriculum_subjects WHERE code = 'NIG-HIST');
 
 -- ==============================================================================
 -- 6. ROW LEVEL SECURITY (RLS) POLICIES
 -- ==============================================================================
-
 ALTER TABLE resource_vault ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admissions_applications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 
--- Allow public reads on published resources
+-- Allow public reads on published learning resources
 DROP POLICY IF EXISTS "Public can view published resources" ON resource_vault;
 CREATE POLICY "Public can view published resources" ON resource_vault
   FOR SELECT USING (is_published = true);
 
--- Allow authenticated users to view their own admissions applications
+-- Allow anyone (public applicants) to submit an admissions application
+DROP POLICY IF EXISTS "Public can submit applications" ON admissions_applications;
+CREATE POLICY "Public can submit applications" ON admissions_applications
+  FOR INSERT WITH CHECK (true);
+
+-- Allow users to view their own admissions applications
 DROP POLICY IF EXISTS "Users can view their own applications" ON admissions_applications;
 CREATE POLICY "Users can view their own applications" ON admissions_applications
-  FOR SELECT USING (auth.uid() = parent_profile_id OR parent_email = auth.jwt() ->> 'email');
+  FOR SELECT USING (auth.uid() = parent_profile_id OR parent_email = (auth.jwt() ->> 'email'));
 
--- Allow service role / server actions full access to admissions
+-- Allow service role full access on admissions
 DROP POLICY IF EXISTS "Service role full access on admissions" ON admissions_applications;
 CREATE POLICY "Service role full access on admissions" ON admissions_applications
   FOR ALL USING (true);
@@ -114,3 +122,8 @@ CREATE POLICY "Service role full access on admissions" ON admissions_application
 DROP POLICY IF EXISTS "Parents can view own invoices" ON invoices;
 CREATE POLICY "Parents can view own invoices" ON invoices
   FOR SELECT USING (auth.uid() = parent_id);
+
+-- Allow service role full access on invoices
+DROP POLICY IF EXISTS "Service role full access on invoices" ON invoices;
+CREATE POLICY "Service role full access on invoices" ON invoices
+  FOR ALL USING (true);
